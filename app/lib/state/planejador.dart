@@ -31,6 +31,7 @@ class PlanejadorState {
     this.proxima,
     this.procurandoProxima = false,
     this.minhaPos,
+    this.chegada = false,
   });
 
   final Lugar? origem;
@@ -50,6 +51,9 @@ class PlanejadorState {
   /// Última posição do aparelho. Fica mesmo que a origem da rota mude: serve às paradas perto, no Início.
   final LatLng? minhaPos;
 
+  /// true: [saida] é a hora em que a pessoa quer CHEGAR, não sair.
+  final bool chegada;
+
   PlanejadorState copyWith({
     Lugar? origem,
     Lugar? destino,
@@ -64,6 +68,7 @@ class PlanejadorState {
     bool limparProxima = false,
     bool? procurandoProxima,
     LatLng? minhaPos,
+    bool? chegada,
   }) => PlanejadorState(
     origem: origem ?? this.origem,
     destino: destino ?? this.destino,
@@ -72,6 +77,7 @@ class PlanejadorState {
     campoMapa: campoMapa ?? this.campoMapa,
     buscandoLocalizacao: buscandoLocalizacao ?? this.buscandoLocalizacao,
     saida: sairAgora ? null : (saida ?? this.saida),
+    chegada: sairAgora ? false : (chegada ?? this.chegada),
     proxima: limparProxima ? null : (proxima ?? this.proxima),
     procurandoProxima: procurandoProxima ?? this.procurandoProxima,
     minhaPos: minhaPos ?? this.minhaPos,
@@ -188,6 +194,7 @@ class PlanejadorNotifier extends Notifier<PlanejadorState> {
       destino: o,
       campoMapa: state.campoMapa,
       saida: state.saida,
+      chegada: state.chegada,
       minhaPos: state.minhaPos,
     );
     _calcular();
@@ -198,18 +205,22 @@ class PlanejadorNotifier extends Notifier<PlanejadorState> {
     if (hora == null) {
       state = state.copyWith(sairAgora: true);
     } else {
-      final agora = DateTime.now().toUtc().add(Config.fusoPalmas);
-      var parede = DateTime.utc(
-        agora.year,
-        agora.month,
-        agora.day,
-        hora,
-        minuto,
-      );
-      if (!parede.isAfter(agora)) parede = parede.add(const Duration(days: 1));
-      state = state.copyWith(saida: parede.subtract(Config.fusoPalmas));
+      state = state.copyWith(saida: _instante(hora, minuto), chegada: false);
     }
     _calcular();
+  }
+
+  /// Quer chegar às [hora]:[minuto] (relógio de Palmas; se já passou hoje, amanhã).
+  void definirChegada(int hora, [int minuto = 0]) {
+    state = state.copyWith(saida: _instante(hora, minuto), chegada: true);
+    _calcular();
+  }
+
+  static DateTime _instante(int hora, int minuto) {
+    final agora = DateTime.now().toUtc().add(Config.fusoPalmas);
+    var parede = DateTime.utc(agora.year, agora.month, agora.day, hora, minuto);
+    if (!parede.isAfter(agora)) parede = parede.add(const Duration(days: 1));
+    return parede.subtract(Config.fusoPalmas);
   }
 
   void selecionar(GrupoOpcoes g) => state = state.copyWith(selecionado: g);
@@ -245,7 +256,12 @@ class PlanejadorNotifier extends Notifier<PlanejadorState> {
     try {
       final opcoes = await ref
           .read(otpClientProvider)
-          .planejar(de: o.pos, para: d.pos, saida: state.saida);
+          .planejar(
+            de: o.pos,
+            para: d.pos,
+            saida: state.saida,
+            chegarAs: state.chegada,
+          );
       if (meu != _pedido) return;
       state = state.copyWith(grupos: AsyncData(agruparOpcoes(opcoes)));
     } catch (e, s) {
@@ -287,7 +303,7 @@ class PlanejadorNotifier extends Notifier<PlanejadorState> {
 
   /// Sair num instante exato (usado por "Próximo ônibus").
   void definirSaidaExata(DateTime t) {
-    state = state.copyWith(saida: t);
+    state = state.copyWith(saida: t, chegada: false);
     _calcular();
   }
 }

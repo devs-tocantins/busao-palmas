@@ -38,6 +38,7 @@ class OtpClient {
     required LatLng de,
     required LatLng para,
     DateTime? saida,
+    bool chegarAs = false,
   }) async {
     final t = (saida ?? DateTime.now()).toUtc().add(Config.fusoPalmas);
     final r = await _dio.get(
@@ -48,6 +49,7 @@ class OtpClient {
         'date': DateFormat('MM-dd-yyyy').format(t),
         'time': DateFormat('HH:mm').format(t),
         'mode': 'TRANSIT,WALK',
+        if (chegarAs) 'arriveBy': true,
         'numItineraries': 5,
         'maxWalkDistance': 2000,
       },

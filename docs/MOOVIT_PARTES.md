@@ -25,8 +25,8 @@ Prioridade: **P0** = defeito confirmado ou bloqueia o uso; **P1** = diferença q
 |---|---|---|---|---|---|
 | 1 | **Início** | Busca no topo, casa e trabalho, paradas e linhas perto com tempo real, mapa por trás | Busca, casa/trabalho, favoritos, "perto de você" (3 paradas, 600 m), recentes | Linhas perto (não só paradas); abrir direto na parada de um toque; atualizar sozinho | P1 |
 | 2 | **Busca** | Resultado a cada letra; mistura lugar, parada e linha; corrige acento e erro de digitação; ícone por tipo | Só geocodificador, 3+ letras, ordem do servidor | Ver defeitos acima. Índice local + servidor, acento, ranking, linhas, ícone e distância | **P0** |
-| 3 | **Mapa** | Zoom, "minha localização", paradas no mapa (toque abre a parada), ônibus ao vivo, rotas desenhadas | Mapa limpo, pinos de origem e destino, rota; paradas só na tela da linha | Botões de zoom e localização; paradas no mapa com zoom ≥ 15; toque na parada | **P0** (zoom/localização), P1 (paradas) |
-| 4 | **Planejar viagem** | Sair agora, sair às, **chegar às**, filtros (menos trocas, menos caminhada, acessível) | Sair agora / sair às; 5 opções agrupadas; "próximo ônibus" quando não há agora | "Chegar às" (o OTP aceita `arriveBy`); filtros de trocas e caminhada | P1 |
+| 3 | **Mapa** | Zoom, "minha localização", paradas no mapa (toque abre a parada), ônibus ao vivo, rotas desenhadas | Mapa limpo, pinos, rota; paradas no mapa com zoom ≥ 15 (toque abre a parada); botões de zoom e localização em tela grande | Botão de localização no celular; ônibus ao vivo no mapa | P1 |
+| 4 | **Planejar viagem** | Sair agora, sair às, **chegar às**, filtros (menos trocas, menos caminhada, acessível) | Sair agora, sair às, chegar às; 5 opções agrupadas; "próximo ônibus" quando não há agora | Filtros de trocas e caminhada | P2 |
 | 5 | **Detalhe e acompanhamento** | Linha do tempo, mapa do trecho, "avisar para descer", acompanhar em tempo real | Linha do tempo, mapa, toque abre a parada | Acompanhar viagem e aviso para descer (exige GPS em segundo plano; só Android) | P2 |
 | 6 | **Parada** | Próximos ônibus ao vivo, grade do dia, linhas que passam, favoritar, avisos | Próximos ao vivo (20 s), "depois", estrela, "como chegar aqui" | Grade do dia por linha; lista das linhas que passam (`paradas.json` já traz `linhas`); mapa da parada | P1 |
 | 7 | **Linhas** | Lista, percurso, paradas, horários, ônibus ao vivo no mapa | Lista com busca, percurso, paradas, horários por dia, parada mais perto de você | Ônibus ao vivo no mapa da linha (`vehicles` existe, não testado de dia); linhas com 2+ variantes de percurso | P1 |
@@ -38,7 +38,7 @@ Prioridade: **P0** = defeito confirmado ou bloqueia o uso; **P1** = diferença q
 
 1. **Busca** (parte 2): é a porta de entrada de tudo. Índice local + servidor, acento, ranking, linhas e paradas.
 2. **Computador e mapa** (partes 3 e 10): painel lateral em tela larga, botões de zoom e localização.
-3. **Paradas no mapa e "chegar às"** (partes 3 e 4).
+3. ~~Paradas no mapa e "chegar às"~~ (feito em 2026-10-25).
 4. **Parada completa** (parte 6): grade do dia e linhas que passam.
 5. **Ao vivo na linha** (parte 7), depois de testar `vehicles` de dia no celular.
 

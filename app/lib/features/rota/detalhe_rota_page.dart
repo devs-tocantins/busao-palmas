@@ -31,7 +31,7 @@ class _DetalheRotaPageState extends ConsumerState<DetalheRotaPage> {
     final grupo = s.selecionado;
     if (grupo == null || s.origem == null || s.destino == null) {
       // Abriu direto pela URL, sem rota escolhida.
-      WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/'));
+      WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/mapa'));
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final o = grupo.principal;

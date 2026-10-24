@@ -73,6 +73,17 @@ abstract final class Tema {
           side: BorderSide(color: cs.outline),
         ),
       ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: cs.surface,
+        indicatorColor: Tokens.amarelo,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (e) => IconThemeData(
+            color: e.contains(WidgetState.selected)
+                ? Colors.black
+                : cs.onSurfaceVariant,
+          ),
+        ),
+      ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(48, 48),

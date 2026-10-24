@@ -30,6 +30,7 @@ class PlanejadorState {
     this.saida,
     this.proxima,
     this.procurandoProxima = false,
+    this.minhaPos,
   });
 
   final Lugar? origem;
@@ -46,6 +47,9 @@ class PlanejadorState {
   final DateTime? proxima;
   final bool procurandoProxima;
 
+  /// Última posição do aparelho. Fica mesmo que a origem da rota mude: serve às paradas perto, no Início.
+  final LatLng? minhaPos;
+
   PlanejadorState copyWith({
     Lugar? origem,
     Lugar? destino,
@@ -59,6 +63,7 @@ class PlanejadorState {
     DateTime? proxima,
     bool limparProxima = false,
     bool? procurandoProxima,
+    LatLng? minhaPos,
   }) => PlanejadorState(
     origem: origem ?? this.origem,
     destino: destino ?? this.destino,
@@ -69,6 +74,7 @@ class PlanejadorState {
     saida: sairAgora ? null : (saida ?? this.saida),
     proxima: limparProxima ? null : (proxima ?? this.proxima),
     procurandoProxima: procurandoProxima ?? this.procurandoProxima,
+    minhaPos: minhaPos ?? this.minhaPos,
   );
 }
 
@@ -149,12 +155,10 @@ class PlanejadorNotifier extends Notifier<PlanejadorState> {
           timeLimit: Duration(seconds: 12),
         ),
       );
+      final aqui = LatLng(p.latitude, p.longitude);
+      state = state.copyWith(minhaPos: aqui);
       definirOrigem(
-        Lugar(
-          nome: 'Minha localização',
-          pos: LatLng(p.latitude, p.longitude),
-          minhaLocalizacao: true,
-        ),
+        Lugar(nome: 'Minha localização', pos: aqui, minhaLocalizacao: true),
       );
     } catch (_) {
       // Sem GPS ou sem permissão: segue sem origem.
@@ -184,6 +188,7 @@ class PlanejadorNotifier extends Notifier<PlanejadorState> {
       destino: o,
       campoMapa: state.campoMapa,
       saida: state.saida,
+      minhaPos: state.minhaPos,
     );
     _calcular();
   }

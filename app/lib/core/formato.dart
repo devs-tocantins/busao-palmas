@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 
+import '../domain/models.dart';
 import 'config.dart';
 
 final _hora = DateFormat('HH:mm');
@@ -27,4 +28,12 @@ String quandoTexto(DateTime saida, {DateTime? agora}) {
   if (dif < 1) return 'agora';
   if (dif < 60) return 'em $dif min';
   return 'às ${horaPalmas(saida)}';
+}
+
+/// "Agora", "em 7 min" ou a hora, quando falta mais de uma hora.
+String faltaTexto(Chegada c) {
+  final m = c.quantoFalta().inMinutes;
+  if (m < 1) return 'Agora';
+  if (m < 60) return 'em $m min';
+  return horaPalmas(c.horario);
 }

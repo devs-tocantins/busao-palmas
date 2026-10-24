@@ -1,20 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 
 import 'core/config.dart';
 import 'core/tema.dart';
-
-import 'package:latlong2/latlong.dart';
-
 import 'domain/models.dart';
+import 'features/inicio/inicio_page.dart';
+import 'features/mais/mais_page.dart';
 import 'features/parada/parada_page.dart';
 import 'features/planejar/busca_page.dart';
 import 'features/planejar/planejar_page.dart';
 import 'features/rota/detalhe_rota_page.dart';
 
+/// Abas de baixo: Início, Mapa e Mais. As demais telas abrem por cima delas.
 final _router = GoRouter(
   routes: [
-    GoRoute(path: '/', builder: (_, _) => const PlanejarPage()),
+    StatefulShellRoute.indexedStack(
+      builder: (_, _, shell) => _Abas(shell: shell),
+      branches: [
+        StatefulShellBranch(
+          routes: [GoRoute(path: '/', builder: (_, _) => const InicioPage())],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/mapa', builder: (_, _) => const PlanejarPage()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [GoRoute(path: '/mais', builder: (_, _) => const MaisPage())],
+        ),
+      ],
+    ),
     GoRoute(
       path: '/busca/:campo',
       builder: (_, s) =>
@@ -27,7 +43,7 @@ final _router = GoRouter(
         final q = s.uri.queryParameters;
         final la = double.tryParse(q['lat'] ?? ''),
             lo = double.tryParse(q['lng'] ?? '');
-        if (la == null || lo == null) return const PlanejarPage();
+        if (la == null || lo == null) return const InicioPage();
         return ParadaPage(
           parada: ParadaRef(nome: q['nome'] ?? 'Parada', pos: LatLng(la, lo)),
         );
@@ -35,6 +51,47 @@ final _router = GoRouter(
     ),
   ],
 );
+
+class _Abas extends StatelessWidget {
+  const _Abas({required this.shell});
+  final StatefulNavigationShell shell;
+
+  @override
+  Widget build(BuildContext context) {
+    // Voltar numa aba que não é o Início leva ao Início, e só dali o app fecha.
+    return PopScope(
+      canPop: shell.currentIndex == 0,
+      onPopInvokedWithResult: (voltou, _) {
+        if (!voltou) shell.goBranch(0);
+      },
+      child: Scaffold(
+        body: shell,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: shell.currentIndex,
+          // Tocar na aba em que já está volta ao começo dela.
+          onDestinationSelected: (i) =>
+              shell.goBranch(i, initialLocation: i == shell.currentIndex),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Início',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.map_outlined),
+              selectedIcon: Icon(Icons.map_rounded),
+              label: 'Mapa',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.more_horiz_rounded),
+              label: 'Mais',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class BusaoPalmasApp extends StatelessWidget {
   const BusaoPalmasApp({super.key});

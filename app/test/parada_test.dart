@@ -156,46 +156,45 @@ void main() {
     expect(t.takeException(), isNull);
   });
 
-  testWidgets(
-    '"Como chegar aqui" define a parada como destino e volta ao início',
-    (t) async {
-      await _celular(t);
-      final router = GoRouter(
-        initialLocation: '/parada',
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (_, _) => const Scaffold(body: Text('INÍCIO')),
-          ),
-          GoRoute(
-            path: '/parada',
-            builder: (_, _) => const ParadaPage(parada: _parada),
+  testWidgets('"Como chegar aqui" define a parada como destino e vai ao mapa', (
+    t,
+  ) async {
+    await _celular(t);
+    final router = GoRouter(
+      initialLocation: '/parada',
+      routes: [
+        GoRoute(
+          path: '/mapa',
+          builder: (_, _) => const Scaffold(body: Text('MAPA')),
+        ),
+        GoRoute(
+          path: '/parada',
+          builder: (_, _) => const ParadaPage(parada: _parada),
+        ),
+      ],
+    );
+    await t.pumpWidget(
+      ProviderScope(
+        overrides: [
+          dadosLocaisProvider.overrideWithValue(_dados()),
+          paradasRepoProvider.overrideWithValue(
+            _RepoFalso(() async => const []),
           ),
         ],
-      );
-      await t.pumpWidget(
-        ProviderScope(
-          overrides: [
-            dadosLocaisProvider.overrideWithValue(_dados()),
-            paradasRepoProvider.overrideWithValue(
-              _RepoFalso(() async => const []),
-            ),
-          ],
-          child: MaterialApp.router(theme: Tema.claro(), routerConfig: router),
-        ),
-      );
-      await t.pump(const Duration(milliseconds: 300));
+        child: MaterialApp.router(theme: Tema.claro(), routerConfig: router),
+      ),
+    );
+    await t.pump(const Duration(milliseconds: 300));
 
-      await t.tap(find.text('Como chegar aqui'));
-      await t.pump(const Duration(milliseconds: 300));
+    await t.tap(find.text('Como chegar aqui'));
+    await t.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('INÍCIO'), findsOneWidget);
-      final c = ProviderScope.containerOf(t.element(find.text('INÍCIO')));
-      expect(c.read(planejadorProvider).destino?.nome, 'Av. NS 10 × Av. LO 4');
-      expect(c.read(planejadorProvider).destino?.ehParada, isTrue);
-      await t.pump(const Duration(seconds: 1));
-    },
-  );
+    expect(find.text('MAPA'), findsOneWidget);
+    final c = ProviderScope.containerOf(t.element(find.text('MAPA')));
+    expect(c.read(planejadorProvider).destino?.nome, 'Av. NS 10 × Av. LO 4');
+    expect(c.read(planejadorProvider).destino?.ehParada, isTrue);
+    await t.pump(const Duration(seconds: 1));
+  });
 
   test('ParadaRef: mesmo lugar é igual mesmo com diferença minúscula nas coordenadas', () {
     const a = ParadaRef(nome: 'X', pos: LatLng(-10.178900001, -48.334));

@@ -49,7 +49,7 @@ class _ParadaPageState extends ConsumerState<ParadaPage> {
     ref
         .read(planejadorProvider.notifier)
         .definirDestino(Lugar(nome: p.nome, pos: p.pos, ehParada: true));
-    context.go('/');
+    context.go('/mapa');
   }
 
   @override
@@ -150,7 +150,7 @@ class _CartaoLinha extends ConsumerWidget {
     return Semantics(
       label:
           'Linha ${saidas.linha}${saidas.destino == null ? '' : ' sentido ${saidas.destino}'}. '
-          '${_falta(c)}${c.aoVivo ? ', ao vivo' : ', horário programado'}.',
+          '${faltaTexto(c)}${c.aoVivo ? ', ao vivo' : ', horário programado'}.',
       excludeSemantics: true,
       child: Card(
         child: Padding(
@@ -180,7 +180,7 @@ class _CartaoLinha extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        _falta(c),
+                        faltaTexto(c),
                         style: t.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                           color: c.aoVivo ? Tokens.aoVivo : cs.onSurface,
@@ -238,14 +238,6 @@ class _CartaoLinha extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  /// "Agora", "em 7 min" ou a hora, quando falta mais de uma hora.
-  static String _falta(Chegada c) {
-    final m = c.quantoFalta().inMinutes;
-    if (m < 1) return 'Agora';
-    if (m < 60) return 'em $m min';
-    return horaPalmas(c.horario);
   }
 }
 

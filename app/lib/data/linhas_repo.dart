@@ -5,6 +5,7 @@ import 'package:google_polyline_algorithm/google_polyline_algorithm.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../core/config.dart';
+import 'frota_repo.dart' show ViagemRef;
 import 'dados_locais.dart';
 
 /// Horários de um tipo de dia (dias úteis, sábados ou domingos).
@@ -69,9 +70,12 @@ class DetalheLinha {
 
 /// Horários, traçados e paradas de cada linha, do snapshot embutido (docs/DADOS.md). Sem rede.
 class DadosLinhas {
-  const DadosLinhas(this.porNumero);
+  const DadosLinhas(this.porNumero, [this.viagens = const []]);
 
   final Map<String, DetalheLinha> porNumero;
+
+  /// Todas as viagens (id, linha e sentido), para perguntar à API onde estão os ônibus.
+  final List<ViagemRef> viagens;
 
   /// Linhas em ordem de número.
   List<DetalheLinha> get todas =>
@@ -160,7 +164,18 @@ class DadosLinhas {
         ],
       );
     }
-    return DadosLinhas(r);
+    final numeroPorId = {
+      for (final l in linhas) l['id']: l['numero'] as String,
+    };
+    return DadosLinhas(r, [
+      for (final e in trajetos.entries)
+        if (numeroPorId[(e.value as Map)['linha']] != null)
+          ViagemRef(
+            tripId: e.key as String,
+            linha: numeroPorId[(e.value as Map)['linha']]!,
+            sentido: ((e.value as Map)['sentido'] as num).toInt(),
+          ),
+    ]);
   }
 
   /// Dia da semana de agora em Palmas, no formato [dom=0 … sáb=6].

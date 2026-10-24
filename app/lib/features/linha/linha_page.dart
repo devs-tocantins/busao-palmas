@@ -12,6 +12,7 @@ import '../../domain/models.dart';
 import '../../state/parada.dart';
 import '../../state/planejador.dart';
 import '../../state/salvos.dart';
+import '../../widgets/camada_onibus.dart';
 import '../../widgets/estrela.dart';
 import '../../widgets/linha_chip.dart';
 import '../../widgets/mapa_base.dart';
@@ -168,6 +169,8 @@ class _ConteudoState extends ConsumerState<_Conteudo> {
                         ),
                       ],
                     ),
+                    // Os ônibus desta linha rodando agora.
+                    CamadaOnibus(linhas: {l.numero}),
                     // Todas as paradas do percurso; a mais perto da pessoa fica maior.
                     CircleLayer(
                       circles: [

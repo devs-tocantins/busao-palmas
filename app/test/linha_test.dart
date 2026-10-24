@@ -6,6 +6,8 @@ import 'package:busao_palmas/data/dados_locais.dart';
 import 'package:busao_palmas/data/linhas_repo.dart';
 import 'package:busao_palmas/features/linha/linha_page.dart';
 import 'package:busao_palmas/features/linha/linhas_page.dart';
+import 'package:busao_palmas/data/frota_repo.dart';
+import 'package:busao_palmas/state/frota.dart';
 import 'package:busao_palmas/state/mapa.dart';
 import 'package:busao_palmas/state/parada.dart';
 import 'package:busao_palmas/data/paradas_repo.dart';
@@ -70,6 +72,7 @@ Future<void> _abrir(WidgetTester t, Widget tela) async {
         dadosLocaisProvider.overrideWithValue(_dados()),
         dadosLinhasProvider.overrideWith((ref) async => _linhas()),
         estiloMapaProvider.overrideWith((ref, escuro) async => null),
+        frotaProvider.overrideWith((ref) => Stream.value(const <Onibus>[])),
       ],
       child: MaterialApp.router(theme: Tema.claro(), routerConfig: router),
     ),
@@ -200,6 +203,7 @@ Future<void> _abrirComLocal(WidgetTester t, LatLng? pos) async {
         dadosLocaisProvider.overrideWithValue(_dados()),
         dadosLinhasProvider.overrideWith((ref) async => _linhas()),
         estiloMapaProvider.overrideWith((ref, escuro) async => null),
+        frotaProvider.overrideWith((ref) => Stream.value(const <Onibus>[])),
         planejadorProvider.overrideWith(() => _PlanejadorComLocal(pos)),
         paradasRepoProvider.overrideWithValue(_RepoVazio()),
       ],

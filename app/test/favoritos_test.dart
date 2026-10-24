@@ -8,6 +8,8 @@ import 'package:busao_palmas/data/paradas_repo.dart';
 import 'package:busao_palmas/domain/models.dart';
 import 'package:busao_palmas/features/inicio/inicio_page.dart';
 import 'package:busao_palmas/features/linha/linha_page.dart';
+import 'package:busao_palmas/data/frota_repo.dart';
+import 'package:busao_palmas/state/frota.dart';
 import 'package:busao_palmas/state/mapa.dart';
 import 'package:busao_palmas/state/parada.dart';
 import 'package:busao_palmas/state/planejador.dart';
@@ -95,6 +97,7 @@ Future<ProviderContainer> _abrir(WidgetTester t, Widget tela) async {
           ),
         ),
         estiloMapaProvider.overrideWith((ref, escuro) async => null),
+        frotaProvider.overrideWith((ref) => Stream.value(const <Onibus>[])),
       ],
       child: MaterialApp.router(theme: Tema.claro(), routerConfig: router),
     ),

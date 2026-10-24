@@ -91,6 +91,8 @@ void main() {
       final s = interpretarDepartures(vivo, agora: _agora).single;
       expect(s.chegadas.first.aoVivo, isTrue);
       expect(s.chegadas.first.atrasoSeg, 120);
+      expect(s.chegadas.first.veiculo, '26036');
+      expect(s.chegadas.last.veiculo, isNull);
       expect(s.chegadas.last.aoVivo, isFalse);
     });
 

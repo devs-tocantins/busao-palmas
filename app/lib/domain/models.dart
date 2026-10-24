@@ -192,13 +192,21 @@ class ParadaRef {
 
 /// Uma passagem de ônibus numa parada.
 class Chegada {
-  const Chegada({required this.horario, this.aoVivo = false, this.atrasoSeg});
+  const Chegada({
+    required this.horario,
+    this.aoVivo = false,
+    this.atrasoSeg,
+    this.veiculo,
+  });
 
   final DateTime horario;
 
   /// true quando há um ônibus real a caminho (posição de GPS); false é horário programado.
   final bool aoVivo;
   final int? atrasoSeg;
+
+  /// Número do ônibus que vai fazer esta passagem (`vehicleId` da API), quando já há GPS.
+  final String? veiculo;
 
   Duration quantoFalta([DateTime? agora]) =>
       horario.difference(agora ?? DateTime.now());

@@ -10,9 +10,11 @@ import '../../core/layout.dart';
 import '../../core/tema.dart';
 import '../../data/otp_client.dart' show SemRota;
 import '../../domain/models.dart';
+import '../../state/frota.dart';
 import '../../state/planejador.dart';
 import '../../state/salvos.dart';
 import '../../widgets/atalhos.dart';
+import '../../widgets/camada_onibus.dart';
 import '../../widgets/camada_paradas.dart';
 import '../../widgets/mapa_base.dart';
 import '../../widgets/sequencia_rota.dart';
@@ -102,6 +104,7 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
                         ref.read(planejadorProvider.notifier).tocarNoMapa(p),
                     children: [
                       const CamadaParadas(),
+                      const CamadaOnibus(),
                       MarkerLayer(
                         markers: [
                           if (s.origem != null)
@@ -147,6 +150,7 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
             onTap: (p) => ref.read(planejadorProvider.notifier).tocarNoMapa(p),
             children: [
               const CamadaParadas(),
+              const CamadaOnibus(),
               MarkerLayer(
                 markers: [
                   if (s.origem != null)
@@ -276,8 +280,93 @@ class _Cabecalho extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const _ChipHorario(),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [_ChipHorario(), _ChipOnibus()],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Liga e desliga os ônibus no mapa e mostra quantos estão rodando.
+class _ChipOnibus extends ConsumerWidget {
+  const _ChipOnibus();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme.labelLarge
+        ?.copyWith(fontWeight: FontWeight.w600);
+    if (!frotaDisponivel) {
+      return Tooltip(
+        message: 'A posição dos ônibus não chega ao navegador. Use o app no celular.',
+        child: Material(
+          color: cs.surface,
+          elevation: 4,
+          shadowColor: Colors.black38,
+          borderRadius: BorderRadius.circular(999),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.sensors_off_rounded,
+                  size: 18,
+                  color: cs.onSurfaceVariant,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Ônibus ao vivo: só no app',
+                  style: t?.copyWith(color: cs.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    final mostrar = ref.watch(mostrarOnibusProvider);
+    // Só conta (e consulta) enquanto esta aba está à vista.
+    final total = mostrar && TickerMode.valuesOf(context).enabled
+        ? ref.watch(frotaProvider).value?.length
+        : null;
+    return Material(
+      color: cs.surface,
+      elevation: 4,
+      shadowColor: Colors.black38,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: ref.read(mostrarOnibusProvider.notifier).alternar,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  mostrar ? Icons.sensors_rounded : Icons.sensors_off_rounded,
+                  size: 18,
+                  color: mostrar ? Tokens.aoVivo : cs.onSurfaceVariant,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  mostrar
+                      ? (total == null
+                            ? 'Ônibus ao vivo'
+                            : 'Ônibus ao vivo · $total')
+                      : 'Ônibus ocultos',
+                  style: t,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -29,9 +29,9 @@ Prioridade: **P0** = defeito confirmado ou bloqueia o uso; **P1** = diferença q
 | 4 | **Planejar viagem** | Sair agora, sair às, **chegar às**, filtros (menos trocas, menos caminhada, acessível) | Sair agora, sair às, chegar às; 5 opções agrupadas; "próximo ônibus" quando não há agora | Filtros de trocas e caminhada | P2 |
 | 5 | **Detalhe e acompanhamento** | Linha do tempo, mapa do trecho, "avisar para descer", acompanhar em tempo real | Linha do tempo, mapa, toque abre a parada | Acompanhar viagem e aviso para descer (exige GPS em segundo plano; só Android) | P2 |
 | 6 | **Parada** | Próximos ônibus ao vivo, grade do dia, linhas que passam, favoritar, avisos | Próximos ao vivo (20 s), "depois", estrela, "como chegar aqui" | Grade do dia por linha; lista das linhas que passam (`paradas.json` já traz `linhas`); mapa da parada | P1 |
-| 7 | **Linhas** | Lista, percurso, paradas, horários, ônibus ao vivo no mapa | Lista com busca, percurso, paradas, horários por dia, parada mais perto de você | Ônibus ao vivo no mapa da linha (`vehicles` existe, não testado de dia); linhas com 2+ variantes de percurso | P1 |
+| 7 | **Linhas** | Lista, percurso, paradas, horários, ônibus ao vivo no mapa | Lista com busca, percurso, paradas, horários por dia, parada mais perto de você | Linhas com 2+ variantes de percurso | P1 |
 | 8 | **Favoritos e salvos** | Casa, trabalho, paradas, linhas, rotas salvas, tudo numa aba | Casa, trabalho, recentes, estrela em linha e parada (aparecem no Início) | Rota favorita (A→B em um toque); gerenciar favoritos num só lugar | P2 |
-| 9 | **Tempo real e avisos** | Ao vivo e atraso em toda parte; avisos de serviço; notificação de chegada | Ao vivo e atraso só na parada | Ao vivo na linha e na rota; avisos (`alerts` está vazio em Palmas); notificação com app fechado exige servidor | P2 |
+| 9 | **Tempo real e avisos** | Ao vivo e atraso em toda parte; avisos de serviço; notificação de chegada | Ônibus ao vivo no mapa, na linha e na rota; "seu ônibus" com tempo e distância; atraso na parada | Ao vivo na web (exige proxy); avisos (`alerts` está vazio em Palmas); notificação com app fechado exige servidor | P1 |
 | 10 | **Plataforma e experiência** | Layout próprio para tela grande, offline, acessibilidade, primeira abertura, ajustes, compartilhar | Funciona em Android e web; dados de linhas e horários embutidos (funcionam sem internet) | Layout de computador; primeira abertura (explicar a localização); tema e tamanho de letra em "Mais"; botão compartilhar rota/parada (o link já existe) | **P0** (computador), P1 (resto) |
 
 ## Ordem proposta
@@ -40,6 +40,6 @@ Prioridade: **P0** = defeito confirmado ou bloqueia o uso; **P1** = diferença q
 2. **Computador e mapa** (partes 3 e 10): painel lateral em tela larga, botões de zoom e localização.
 3. ~~Paradas no mapa e "chegar às"~~ (feito em 2026-10-25).
 4. **Parada completa** (parte 6): grade do dia e linhas que passam.
-5. **Ao vivo na linha** (parte 7), depois de testar `vehicles` de dia no celular.
+5. ~~Ao vivo no mapa, na linha e "seu ônibus" na rota~~ (feito em 2026-10-24; só no app). Falta testar no celular e decidir o proxy para a web.
 
-Não verificado: `vehicles` com ônibus rodando; formato de `alerts` com conteúdo; se o SOU mostra as mesmas 47 linhas (conferência pendente).
+Não verificado: ônibus ao vivo no celular (testado só a API e a tela em teste automático); formato de `alerts` com conteúdo; se o SOU mostra as mesmas 47 linhas (conferência pendente).

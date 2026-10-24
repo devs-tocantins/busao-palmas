@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' show PointMode;
 
 import 'package:flutter/material.dart';
@@ -10,7 +11,11 @@ import '../../core/formato.dart';
 import '../../core/rotas.dart';
 import '../../core/tema.dart';
 import '../../domain/models.dart';
+import '../../domain/seu_onibus.dart';
+import '../../state/frota.dart';
+import '../../state/parada.dart';
 import '../../state/planejador.dart';
+import '../../widgets/camada_onibus.dart';
 import '../../widgets/linha_chip.dart';
 import '../../widgets/mapa_base.dart';
 import '../../widgets/sequencia_rota.dart';
@@ -24,6 +29,22 @@ class DetalheRotaPage extends ConsumerStatefulWidget {
 
 class _DetalheRotaPageState extends ConsumerState<DetalheRotaPage> {
   final _mapa = MapController();
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Mesma frequência da Mobilibus (20 s): o tempo que falta e a posição do ônibus se atualizam sozinhos.
+    _timer = Timer.periodic(intervaloFrota, (_) {
+      if (mounted) ref.invalidate(saidasProvider);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +57,27 @@ class _DetalheRotaPageState extends ConsumerState<DetalheRotaPage> {
     }
     final o = grupo.principal;
     final pontos = [for (final t in o.trechos) ...t.caminho];
+    // O primeiro ônibus que a pessoa vai pegar: quanto falta e onde ele está.
+    final primeiro = o.trechos
+        .where((t) => t.tipo == TipoTrecho.onibus)
+        .firstOrNull;
+    final saidas = primeiro == null
+        ? null
+        : ref.watch(
+            saidasProvider(ParadaRef(nome: primeiro.nomeDe, pos: primeiro.de)),
+          );
+    final chegada = primeiro == null || saidas?.value == null
+        ? null
+        : escolherChegada(
+            saidas!.value!,
+            linha: primeiro.linha ?? '',
+            destino: primeiro.destino,
+            previsto: primeiro.inicio,
+          );
+    final linhasDaRota = {
+      for (final t in o.trechos)
+        if (t.tipo == TipoTrecho.onibus && t.linha != null) t.linha!,
+    };
     final altura = MediaQuery.sizeOf(context).height;
 
     return Scaffold(
@@ -68,6 +110,10 @@ class _DetalheRotaPageState extends ConsumerState<DetalheRotaPage> {
                         strokeJoin: StrokeJoin.round,
                       ),
                 ],
+              ),
+              CamadaOnibus(
+                linhas: linhasDaRota,
+                destaque: {if (chegada?.veiculo != null) chegada!.veiculo!},
               ),
               MarkerLayer(
                 markers: [
@@ -107,6 +153,9 @@ class _DetalheRotaPageState extends ConsumerState<DetalheRotaPage> {
             ),
           ),
           _Painel(
+            primeiro: primeiro,
+            chegada: chegada,
+            carregandoSaidas: saidas?.isLoading ?? false,
             grupo: grupo,
             origem: s.origem!,
             destino: s.destino!,
@@ -149,12 +198,18 @@ class _DetalheRotaPageState extends ConsumerState<DetalheRotaPage> {
 
 class _Painel extends ConsumerWidget {
   const _Painel({
+    required this.primeiro,
+    required this.chegada,
+    required this.carregandoSaidas,
     required this.grupo,
     required this.origem,
     required this.destino,
     required this.aoCarregarMapa,
   });
 
+  final Trecho? primeiro;
+  final Chegada? chegada;
+  final bool carregandoSaidas;
   final GrupoOpcoes grupo;
   final Lugar origem;
   final Lugar destino;
@@ -223,6 +278,15 @@ class _Painel extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 10),
+            if (primeiro != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _SeuOnibus(
+                  trecho: primeiro!,
+                  chegada: chegada,
+                  carregando: carregandoSaidas,
+                ),
+              ),
             SequenciaRota(grupo: grupo, dados: dados),
             const SizedBox(height: 6),
             Text(
@@ -252,6 +316,132 @@ class _Painel extends ConsumerWidget {
               origem: origem,
               destino: destino,
               dados: dados,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// O ônibus que a pessoa vai pegar: quanto falta, se já tem GPS e a que distância da parada ele está.
+class _SeuOnibus extends ConsumerWidget {
+  const _SeuOnibus({
+    required this.trecho,
+    required this.chegada,
+    required this.carregando,
+  });
+
+  final Trecho trecho;
+  final Chegada? chegada;
+  final bool carregando;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    final dados = ref.watch(dadosLocaisProvider);
+    final c = chegada;
+    final frota = TickerMode.valuesOf(context).enabled
+        ? ref.watch(frotaProvider).value
+        : null;
+    final onibus = c?.veiculo == null
+        ? null
+        : frota?.where((o) => o.id == c!.veiculo).firstOrNull;
+    final vivo = c?.aoVivo ?? false;
+
+    final String titulo;
+    final String? detalhe;
+    if (c == null) {
+      titulo = carregando
+          ? 'Procurando o seu ônibus…'
+          : 'Horário do seu ônibus';
+      detalhe = carregando
+          ? null
+          : 'Sai às ${horaPalmas(trecho.inicio)} de ${trecho.nomeDe}.';
+    } else {
+      titulo = 'Chega ${faltaTexto(c).toLowerCase()}';
+      if (onibus != null) {
+        final m = metrosAte(onibus, trecho.de);
+        final atraso = c.atrasoSeg ?? onibus.atrasoSeg;
+        detalhe = [
+          'Ônibus ${onibus.id} a ${distanciaTexto(m)} da parada',
+          if (atraso >= 120)
+            'atrasado ${duracaoTexto(Duration(seconds: atraso))}',
+        ].join(' · ');
+      } else if (vivo) {
+        detalhe = 'Ônibus com GPS a caminho de ${trecho.nomeDe}.';
+      } else {
+        detalhe =
+            'Horário programado: ainda sem sinal de GPS desse ônibus. Às ${horaPalmas(c.horario)} em ${trecho.nomeDe}.';
+      }
+    }
+
+    return Semantics(
+      container: true,
+      label: 'Seu ônibus, linha ${trecho.linha}. $titulo. ${detalhe ?? ''}',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(Tokens.raioCartao),
+          border: Border.all(color: vivo ? Tokens.aoVivo : cs.outline),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            LinhaChip.de(
+              dados.linhas[trecho.linha],
+              trecho.linha ?? '',
+              grande: true,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          titulo,
+                          style: t.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: vivo ? Tokens.aoVivo : cs.onSurface,
+                          ),
+                        ),
+                      ),
+                      if (vivo) ...[
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.sensors_rounded,
+                          size: 16,
+                          color: Tokens.aoVivo,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          'Ao vivo',
+                          style: t.labelSmall?.copyWith(
+                            color: Tokens.aoVivo,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (detalhe != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        detalhe,
+                        style: t.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ],
         ),

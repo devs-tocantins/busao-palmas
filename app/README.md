@@ -21,9 +21,9 @@ flutter build web --release         # site em build/web/
 
 - **Rota, busca de lugar e nome do ponto no mapa:** planejador (OTP) e geocodificador do Bus2, os mesmos do app SOU
   ([docs/API_MOBILIBUS.md](../docs/API_MOBILIBUS.md)). Aceitam chamada do navegador, então a web não precisa de proxy nesta fase.
-- **Nome legível das paradas e cor das linhas:** `assets/data/paradas.json` e `assets/data/linhas.json`,
+- **Paradas, linhas, horários e percursos:** `assets/data/` (`paradas`, `linhas`, `horarios`, `trajetos`),
   cópias de `data/gerado/` (gerado por `tools/snapshot.mjs`, formato em [docs/DADOS.md](../docs/DADOS.md)).
-  Para atualizar: `cd tools && node snapshot.mjs`, depois copie os dois arquivos para `app/assets/data/`.
+  Para atualizar: `cd tools && node snapshot.mjs`, depois copie os quatro arquivos para `app/assets/data/`.
 - **Mapa:** estilos Positron (claro) e Dark do OpenFreeMap (gratuito, sem chave, dados do OpenStreetMap), desenhados no aparelho
   com `vector_map_tiles`. Retiramos do estilo os nomes de ruas pequenas (`lib/state/mapa.dart`). Atribuição sempre visível.
   O OpenFreeMap vive de doações: se o app crescer, apoiar ou trocar por tiles próprios (PMTiles do Tocantins).
@@ -61,7 +61,8 @@ Serve para compartilhar um trajeto e para testar de dia, fora do horário.
 
 ## Navegação
 
-Abas embaixo: **Início** (busca de destino, Casa e Trabalho, paradas a até 600 m com a próxima saída, recentes), **Mapa** (rota) e **Mais** (sobre).
+Abas embaixo: **Início** (busca de destino, Casa e Trabalho, paradas a até 600 m com a próxima saída, recentes), **Mapa** (rota), **Linhas** e **Mais** (sobre).
+A tela da linha (`/linha/620`) mostra o percurso, os horários por tipo de dia e as paradas; tocar numa linha na tela da parada abre ela. Tudo vem do snapshot embutido (sem rede); só o ônibus ao vivo vem da parada.
 Escolher um destino no Início leva ao Mapa. "Perto de você" usa as paradas do snapshot, sem rede, e só pede horários das 3 mais próximas.
 
 ## Estrutura
@@ -72,7 +73,7 @@ lib/
   domain/     modelos (Lugar, Trecho, Opcao, GrupoOpcoes)
   data/       cliente do OTP e geocodificador, dados locais
   state/      estado do planejador (Riverpod)
-  features/   inicio/ (entrada), planejar/ (mapa, busca, opções), rota/ (detalhe), parada/, mais/
+  features/   inicio/ (entrada), linha/ (lista e detalhe), planejar/ (mapa, busca, opções), rota/ (detalhe), parada/, mais/
   widgets/    etiqueta de linha, sequência da rota, mapa
 test/         interpretação de uma resposta real do planejador, formatação e telas
 ```
@@ -83,6 +84,6 @@ não combina com o `flutter/material.dart` do Flutter 3.47), `flutter_animate`.
 ## Limites conhecidos
 
 - Só "sair às" (não há "chegar às" na tela, embora o planejador aceite).
-- Equivalentes são agrupados pelas paradas de embarque e desembarque. Ainda não há tela de linha.
+- Equivalentes são agrupados pelas paradas de embarque e desembarque. 
 - A localização pode ser negada; a origem então é escolhida na busca ou no mapa.
 - Sem ônibus à noite, o planejador devolve só caminhada.

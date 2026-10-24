@@ -6,13 +6,15 @@ import 'core/config.dart';
 import 'core/tema.dart';
 import 'domain/models.dart';
 import 'features/inicio/inicio_page.dart';
+import 'features/linha/linha_page.dart';
+import 'features/linha/linhas_page.dart';
 import 'features/mais/mais_page.dart';
 import 'features/parada/parada_page.dart';
 import 'features/planejar/busca_page.dart';
 import 'features/planejar/planejar_page.dart';
 import 'features/rota/detalhe_rota_page.dart';
 
-/// Abas de baixo: Início, Mapa e Mais. As demais telas abrem por cima delas.
+/// Abas de baixo: Início, Mapa, Linhas e Mais. As demais telas abrem por cima delas.
 final _router = GoRouter(
   routes: [
     StatefulShellRoute.indexedStack(
@@ -27,6 +29,11 @@ final _router = GoRouter(
           ],
         ),
         StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/linhas', builder: (_, _) => const LinhasPage()),
+          ],
+        ),
+        StatefulShellBranch(
           routes: [GoRoute(path: '/mais', builder: (_, _) => const MaisPage())],
         ),
       ],
@@ -35,6 +42,10 @@ final _router = GoRouter(
       path: '/busca/:campo',
       builder: (_, s) =>
           BuscaPage(modo: ModoBusca.doTexto(s.pathParameters['campo'])),
+    ),
+    GoRoute(
+      path: '/linha/:numero',
+      builder: (_, s) => LinhaPage(numero: s.pathParameters['numero'] ?? ''),
     ),
     GoRoute(path: '/rota', builder: (_, _) => const DetalheRotaPage()),
     GoRoute(
@@ -81,6 +92,11 @@ class _Abas extends StatelessWidget {
               icon: Icon(Icons.map_outlined),
               selectedIcon: Icon(Icons.map_rounded),
               label: 'Mapa',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.route_outlined),
+              selectedIcon: Icon(Icons.route_rounded),
+              label: 'Linhas',
             ),
             NavigationDestination(
               icon: Icon(Icons.more_horiz_rounded),

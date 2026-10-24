@@ -74,6 +74,25 @@ class DadosLocais {
     return menor <= maxM * maxM ? melhor : null;
   }
 
+  /// Até [max] paradas a no máximo [raioM] metros de [p], da mais perto para a mais longe.
+  /// Calculado no aparelho com as 1.210 paradas do snapshot: não precisa de rede.
+  List<({ParadaLocal parada, double metros})> paradasPerto(
+    LatLng p, {
+    int max = 3,
+    double raioM = 600,
+  }) {
+    final kx = 111320 * math.cos(p.latitude * math.pi / 180), ky = 110574.0;
+    final perto = <({ParadaLocal parada, double metros})>[];
+    for (final s in paradas) {
+      final dx = (s.pos.longitude - p.longitude) * kx,
+          dy = (s.pos.latitude - p.latitude) * ky;
+      final m = math.sqrt(dx * dx + dy * dy);
+      if (m <= raioM) perto.add((parada: s, metros: m));
+    }
+    perto.sort((a, b) => a.metros.compareTo(b.metros));
+    return perto.take(max).toList();
+  }
+
   /// Nome legível da parada em [p]. O OTP às vezes só devolve o código numérico.
   String nomeParada(LatLng p, {String? nomeOtp}) {
     final local = paradaPerto(p);

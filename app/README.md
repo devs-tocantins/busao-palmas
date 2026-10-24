@@ -59,6 +59,11 @@ descrito em [docs/ARQUITETURA.md](../docs/ARQUITETURA.md).
 `de` e `para` são `lat,lng`; `hora` é opcional (`HH:mm`, relógio de Palmas; se já passou hoje, vale para amanhã).
 Serve para compartilhar um trajeto e para testar de dia, fora do horário.
 
+## Navegação
+
+Abas embaixo: **Início** (busca de destino, Casa e Trabalho, paradas a até 600 m com a próxima saída, recentes), **Mapa** (rota) e **Mais** (sobre).
+Escolher um destino no Início leva ao Mapa. "Perto de você" usa as paradas do snapshot, sem rede, e só pede horários das 3 mais próximas.
+
 ## Estrutura
 
 ```
@@ -67,7 +72,7 @@ lib/
   domain/     modelos (Lugar, Trecho, Opcao, GrupoOpcoes)
   data/       cliente do OTP e geocodificador, dados locais
   state/      estado do planejador (Riverpod)
-  features/   planejar/ (mapa, busca, opções) e rota/ (detalhe)
+  features/   inicio/ (entrada), planejar/ (mapa, busca, opções), rota/ (detalhe), parada/, mais/
   widgets/    etiqueta de linha, sequência da rota, mapa
 test/         interpretação de uma resposta real do planejador, formatação e telas
 ```
@@ -78,6 +83,6 @@ não combina com o `flutter/material.dart` do Flutter 3.47), `flutter_animate`.
 ## Limites conhecidos
 
 - Só "sair às" (não há "chegar às" na tela, embora o planejador aceite).
-- Equivalentes são agrupados pelas paradas de embarque e desembarque; não há ainda tela de linha nem de parada.
+- Equivalentes são agrupados pelas paradas de embarque e desembarque. Ainda não há tela de linha.
 - A localização pode ser negada; a origem então é escolhida na busca ou no mapa.
 - Sem ônibus à noite, o planejador devolve só caminhada.

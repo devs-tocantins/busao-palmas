@@ -162,6 +162,17 @@ class ParadaRef {
   final String nome;
   final LatLng pos;
 
+  Map<String, dynamic> toJson() => {
+    'nome': nome,
+    'lat': pos.latitude,
+    'lng': pos.longitude,
+  };
+
+  factory ParadaRef.fromJson(Map<String, dynamic> j) => ParadaRef(
+    nome: j['nome'] as String,
+    pos: LatLng((j['lat'] as num).toDouble(), (j['lng'] as num).toDouble()),
+  );
+
   @override
   bool operator ==(Object other) =>
       other is ParadaRef &&

@@ -8,6 +8,8 @@ import '../../core/rotas.dart';
 import '../../core/tema.dart';
 import '../../data/linhas_repo.dart';
 import '../../state/parada.dart';
+import '../../state/salvos.dart';
+import '../../widgets/estrela.dart';
 import '../../widgets/linha_chip.dart';
 import '../../widgets/mapa_base.dart';
 
@@ -21,7 +23,19 @@ class LinhaPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dados = ref.watch(dadosLinhasProvider);
     return Scaffold(
-      appBar: AppBar(title: Text('Linha $numero')),
+      appBar: AppBar(
+        title: Text('Linha $numero'),
+        actions: [
+          BotaoEstrela(
+            oQue: 'linha',
+            marcado: (ref.watch(salvosProvider).value ?? const Salvos())
+                .linhasFavoritas
+                .contains(numero),
+            aoAlternar: () =>
+                ref.read(salvosProvider.notifier).alternarLinha(numero),
+          ),
+        ],
+      ),
       body: dados.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) =>

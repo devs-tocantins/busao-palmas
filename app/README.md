@@ -62,7 +62,8 @@ Serve para compartilhar um trajeto e para testar de dia, fora do horário.
 ## Navegação
 
 Abas embaixo: **Início** (busca de destino, Casa e Trabalho, paradas a até 600 m com a próxima saída, recentes), **Mapa** (rota), **Linhas** e **Mais** (sobre).
-A tela da linha (`/linha/620`) mostra o percurso, os horários por tipo de dia e as paradas; tocar numa linha na tela da parada abre ela. Tudo vem do snapshot embutido (sem rede); só o ônibus ao vivo vem da parada.
+A tela da linha (`/linha/620`) mostra o percurso, os horários por tipo de dia e as paradas; tocar numa linha na tela da parada abre ela. A estrela na tela da linha e da parada guarda o favorito no aparelho (chave `salvos_v1`); eles aparecem no Início, em "Favoritos".
+Tudo vem do snapshot embutido (sem rede); só o ônibus ao vivo vem da parada.
 Escolher um destino no Início leva ao Mapa. "Perto de você" usa as paradas do snapshot, sem rede, e só pede horários das 3 mais próximas.
 
 ## Estrutura

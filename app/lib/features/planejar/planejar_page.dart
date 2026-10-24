@@ -13,6 +13,7 @@ import '../../domain/models.dart';
 import '../../state/planejador.dart';
 import '../../state/salvos.dart';
 import '../../widgets/atalhos.dart';
+import '../../widgets/camada_paradas.dart';
 import '../../widgets/mapa_base.dart';
 import '../../widgets/sequencia_rota.dart';
 
@@ -100,6 +101,7 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
                     onTap: (p) =>
                         ref.read(planejadorProvider.notifier).tocarNoMapa(p),
                     children: [
+                      const CamadaParadas(),
                       MarkerLayer(
                         markers: [
                           if (s.origem != null)
@@ -144,6 +146,7 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
             controller: _mapa,
             onTap: (p) => ref.read(planejadorProvider.notifier).tocarNoMapa(p),
             children: [
+              const CamadaParadas(),
               MarkerLayer(
                 markers: [
                   if (s.origem != null)
@@ -281,14 +284,40 @@ class _Cabecalho extends ConsumerWidget {
   }
 }
 
-/// "Sair agora" / "Sair às 08:00": define a hora de saída usada no planejamento.
+/// "Sair agora" / "Sair às 08:00" / "Chegar às 08:00": define a hora usada no planejamento.
 class _ChipHorario extends ConsumerWidget {
   const _ChipHorario();
 
+  Future<TimeOfDay?> _escolherHora(
+    BuildContext context,
+    String titulo,
+    DateTime? atual,
+  ) {
+    final agora = TimeOfDay.fromDateTime(
+      DateTime.now().toUtc().add(Config.fusoPalmas),
+    );
+    return showTimePicker(
+      context: context,
+      initialTime: atual == null
+          ? agora
+          : TimeOfDay.fromDateTime(atual.add(Config.fusoPalmas)),
+      helpText: titulo,
+      cancelText: 'Cancelar',
+      confirmText: 'Pronto',
+      builder: (c, child) => MediaQuery(
+        data: MediaQuery.of(c).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final saida = ref.watch(planejadorProvider.select((s) => s.saida));
+    final s = ref.watch(planejadorProvider);
     final cs = Theme.of(context).colorScheme;
+    final rotulo = s.saida == null
+        ? 'Sair agora'
+        : '${s.chegada ? 'Chegar' : 'Sair'} às ${horaPalmas(s.saida!)}';
     return Material(
       color: cs.surface,
       elevation: 4,
@@ -298,24 +327,46 @@ class _ChipHorario extends ConsumerWidget {
         borderRadius: BorderRadius.circular(999),
         onTap: () async {
           final n = ref.read(planejadorProvider.notifier);
-          final agora = TimeOfDay.fromDateTime(
-            DateTime.now().toUtc().add(Config.fusoPalmas),
-          );
-          final h = await showTimePicker(
+          final escolha = await showModalBottomSheet<String>(
             context: context,
-            initialTime: saida == null
-                ? agora
-                : TimeOfDay.fromDateTime(saida.add(Config.fusoPalmas)),
-            helpText: 'Sair às',
-            cancelText: 'Sair agora',
-            confirmText: 'Pronto',
-            builder: (c, child) => MediaQuery(
-              data: MediaQuery.of(c).copyWith(alwaysUse24HourFormat: true),
-              child: child!,
+            showDragHandle: true,
+            builder: (c) => SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.bolt_rounded),
+                    title: const Text('Sair agora'),
+                    selected: s.saida == null,
+                    onTap: () => Navigator.pop(c, 'agora'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.schedule_rounded),
+                    title: const Text('Sair às…'),
+                    selected: s.saida != null && !s.chegada,
+                    onTap: () => Navigator.pop(c, 'sair'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.flag_outlined),
+                    title: const Text('Chegar às…'),
+                    selected: s.saida != null && s.chegada,
+                    onTap: () => Navigator.pop(c, 'chegar'),
+                  ),
+                ],
+              ),
             ),
           );
-          // "Sair agora" fecha o seletor sem escolher hora.
-          h == null ? n.definirSaida(null) : n.definirSaida(h.hour, h.minute);
+          if (escolha == null || !context.mounted) return;
+          if (escolha == 'agora') return n.definirSaida(null);
+          final h = await _escolherHora(
+            context,
+            escolha == 'sair' ? 'Sair às' : 'Chegar às',
+            s.saida,
+          );
+          if (h == null) return;
+          escolha == 'sair'
+              ? n.definirSaida(h.hour, h.minute)
+              : n.definirChegada(h.hour, h.minute);
         },
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 48),
@@ -324,10 +375,13 @@ class _ChipHorario extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.schedule_rounded, size: 18),
+                Icon(
+                  s.chegada ? Icons.flag_outlined : Icons.schedule_rounded,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
                 Text(
-                  saida == null ? 'Sair agora' : 'Sair às ${horaPalmas(saida)}',
+                  rotulo,
                   style: Theme.of(context).textTheme.labelLarge
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),

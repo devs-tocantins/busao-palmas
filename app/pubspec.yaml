@@ -51,6 +51,7 @@ dependencies:
   shared_preferences: ^2.5.6
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
 
@@ -104,3 +105,17 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Ícones gerados a partir de assets/brand (fonte: tools/marca.mjs). Para refazer: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/brand/icone.png
+  adaptive_icon_background: "#FFD100"
+  adaptive_icon_foreground: assets/brand/icone-primeiro-plano.png
+  adaptive_icon_monochrome: assets/brand/icone-monocromatico.png
+  web:
+    generate: true
+    image_path: assets/brand/icone.png
+    background_color: "#FFD100"
+    theme_color: "#FFD100"

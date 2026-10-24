@@ -34,4 +34,4 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md). A forma mais fácil de ajudar é corrig
 
 ## Licença
 
-A definir.
+[MIT](LICENSE).

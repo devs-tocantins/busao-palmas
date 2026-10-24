@@ -15,7 +15,7 @@ Contrato da API de dados: [API_MOBILIBUS.md](API_MOBILIBUS.md).
 | Dados ao vivo (previsão, ônibus, rota) | Chamados na hora, pelo proxy. |
 | Web | Exige proxy: a API de dados não envia CORS. |
 | Hospedagem | Em aberto. |
-| Licença | Em aberto. |
+| Licença | MIT. |
 | Contato com SOU Palmas / prefeitura | Só depois de ter uma demonstração. |
 
 ## Fatos que moldam o desenho (verificado 2026-10-23/24)

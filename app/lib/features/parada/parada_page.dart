@@ -153,87 +153,91 @@ class _CartaoLinha extends ConsumerWidget {
           '${faltaTexto(c)}${c.aoVivo ? ', ao vivo' : ', horário programado'}.',
       excludeSemantics: true,
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  LinhaChip.de(
-                    dados.linhas[saidas.linha],
-                    saidas.linha,
-                    grande: true,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      saidas.destino ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: t.bodyMedium,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push('/linha/${saidas.linha}'),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LinhaChip.de(
+                      dados.linhas[saidas.linha],
+                      saidas.linha,
+                      grande: true,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        faltaTexto(c),
-                        style: t.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: c.aoVivo ? Tokens.aoVivo : cs.onSurface,
-                        ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        saidas.destino ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: t.bodyMedium,
                       ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            c.aoVivo
-                                ? Icons.sensors_rounded
-                                : Icons.schedule_rounded,
-                            size: 14,
-                            color: c.aoVivo
-                                ? Tokens.aoVivo
-                                : cs.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          faltaTexto(c),
+                          style: t.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: c.aoVivo ? Tokens.aoVivo : cs.onSurface,
                           ),
-                          const SizedBox(width: 3),
-                          Text(
-                            c.aoVivo ? 'Ao vivo' : 'Programado',
-                            style: t.labelSmall?.copyWith(
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              c.aoVivo
+                                  ? Icons.sensors_rounded
+                                  : Icons.schedule_rounded,
+                              size: 14,
                               color: c.aoVivo
                                   ? Tokens.aoVivo
                                   : cs.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 3),
+                            Text(
+                              c.aoVivo ? 'Ao vivo' : 'Programado',
+                              style: t.labelSmall?.copyWith(
+                                color: c.aoVivo
+                                    ? Tokens.aoVivo
+                                    : cs.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (atrasado)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Atrasado ${duracaoTexto(Duration(seconds: c.atrasoSeg!))}',
+                      style: t.bodySmall?.copyWith(
+                        color: Tokens.atraso,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              if (atrasado)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    'Atrasado ${duracaoTexto(Duration(seconds: c.atrasoSeg!))}',
-                    style: t.bodySmall?.copyWith(
-                      color: Tokens.atraso,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-              if (depois.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(
-                    'Depois: ${depois.join(' · ')}',
-                    style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                if (depois.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      'Depois: ${depois.join(' · ')}',
+                      style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

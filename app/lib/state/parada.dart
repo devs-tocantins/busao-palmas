@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/linhas_repo.dart';
 import '../data/paradas_repo.dart';
 import '../domain/models.dart';
 import 'planejador.dart';
@@ -17,3 +18,8 @@ final saidasProvider = FutureProvider.autoDispose
       (ref, parada) => ref.watch(paradasRepoProvider).saidas(parada),
       retry: (_, _) => null,
     );
+
+/// Horários, traçados e paradas das linhas, lidos uma vez dos assets.
+final dadosLinhasProvider = FutureProvider<DadosLinhas>(
+  (ref) => DadosLinhas.carregar(ref.watch(dadosLocaisProvider)),
+);

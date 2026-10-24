@@ -17,6 +17,8 @@ class MapaBase extends ConsumerWidget {
     this.onTap,
     this.centro,
     this.zoom,
+    this.interativo = true,
+    this.ajuste,
   });
 
   final MapController controller;
@@ -24,6 +26,12 @@ class MapaBase extends ConsumerWidget {
   final void Function(LatLng)? onTap;
   final LatLng? centro;
   final double? zoom;
+
+  /// false: mapa só para olhar (dentro de uma lista que rola).
+  final bool interativo;
+
+  /// Enquadramento inicial (por exemplo, o percurso inteiro de uma linha). Vale sobre [centro] e [zoom].
+  final CameraFit? ajuste;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,13 +42,16 @@ class MapaBase extends ConsumerWidget {
       options: MapOptions(
         initialCenter: centro ?? Config.centro,
         initialZoom: zoom ?? Config.zoomInicial,
+        initialCameraFit: ajuste,
         minZoom: 9,
         maxZoom: 19,
         backgroundColor: escuro
             ? const Color(0xFF111111)
             : const Color(0xFFF1F1EF),
-        interactionOptions: const InteractionOptions(
-          flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+        interactionOptions: InteractionOptions(
+          flags: interativo
+              ? InteractiveFlag.all & ~InteractiveFlag.rotate
+              : InteractiveFlag.none,
         ),
         onTap: onTap == null ? null : (_, p) => onTap!(p),
       ),

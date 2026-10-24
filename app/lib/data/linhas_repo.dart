@@ -43,6 +43,21 @@ class SentidoLinha {
   final List<ServicoLinha> servicos;
   final List<LatLng> caminho;
   final List<ParadaLocal> paradas;
+
+  /// A parada deste sentido mais perto de [p]: posição na lista e distância em metros. null se não há paradas.
+  ({int indice, double metros})? maisPerto(LatLng p) {
+    const dist = Distance();
+    int? melhor;
+    var menor = double.infinity;
+    for (var i = 0; i < paradas.length; i++) {
+      final m = dist.as(LengthUnit.Meter, p, paradas[i].pos);
+      if (m < menor) {
+        menor = m;
+        melhor = i;
+      }
+    }
+    return melhor == null ? null : (indice: melhor, metros: menor);
+  }
 }
 
 class DetalheLinha {

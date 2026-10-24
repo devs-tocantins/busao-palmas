@@ -8,6 +8,8 @@ import 'package:busao_palmas/features/linha/linha_page.dart';
 import 'package:busao_palmas/features/linha/linhas_page.dart';
 import 'package:busao_palmas/state/mapa.dart';
 import 'package:busao_palmas/state/parada.dart';
+import 'package:busao_palmas/data/paradas_repo.dart';
+import 'package:busao_palmas/domain/models.dart';
 import 'package:busao_palmas/state/planejador.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -76,6 +78,8 @@ Future<void> _abrir(WidgetTester t, Widget tela) async {
 }
 
 void main() {
+  testesParadaPerto();
+  testesTelaParadaPerto();
   test('monta as 47 linhas com horários, traçado e paradas', () {
     final d = _linhas();
     expect(d.porNumero.length, 47);
@@ -146,4 +150,92 @@ void main() {
     await t.pumpAndSettle();
     expect(find.text('LINHA 620'), findsOneWidget);
   });
+}
+
+void testesParadaPerto() {
+  test('maisPerto: acha a parada do sentido mais próxima do ponto', () {
+    final s = _linhas().porNumero['620']!.sentidos.first;
+    final alvo = s.paradas[10].pos;
+    final r = s.maisPerto(alvo)!;
+    expect(r.indice, 10);
+    expect(r.metros, lessThan(1));
+    // Um ponto ~50 m ao lado continua apontando para a mesma parada, a poucas dezenas de metros.
+    final aoLado = LatLng(alvo.latitude + 0.00045, alvo.longitude);
+    final r2 = s.maisPerto(aoLado)!;
+    expect(r2.indice, 10);
+    expect(r2.metros, inInclusiveRange(40, 60));
+  });
+}
+
+class _PlanejadorComLocal extends PlanejadorNotifier {
+  _PlanejadorComLocal(this.pos);
+  final LatLng? pos;
+
+  @override
+  PlanejadorState build() => PlanejadorState(minhaPos: pos);
+
+  @override
+  Future<void> usarMinhaLocalizacao() async {}
+}
+
+Future<void> _abrirComLocal(WidgetTester t, LatLng? pos) async {
+  t.view.physicalSize = const Size(1080, 2400);
+  t.view.devicePixelRatio = 2.75;
+  addTearDown(t.view.reset);
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (_, _) => const LinhaPage(numero: '620'),
+      ),
+      GoRoute(
+        path: '/parada',
+        builder: (_, _) => const Scaffold(body: Text('PARADA')),
+      ),
+    ],
+  );
+  await t.pumpWidget(
+    ProviderScope(
+      overrides: [
+        dadosLocaisProvider.overrideWithValue(_dados()),
+        dadosLinhasProvider.overrideWith((ref) async => _linhas()),
+        estiloMapaProvider.overrideWith((ref, escuro) async => null),
+        planejadorProvider.overrideWith(() => _PlanejadorComLocal(pos)),
+        paradasRepoProvider.overrideWithValue(_RepoVazio()),
+      ],
+      child: MaterialApp.router(theme: Tema.claro(), routerConfig: router),
+    ),
+  );
+  await t.pump(const Duration(milliseconds: 600));
+}
+
+class _RepoVazio extends ParadasRepo {
+  _RepoVazio() : super(_dados());
+  @override
+  Future<List<SaidasLinha>> saidas(ParadaRef parada) async => const [];
+}
+
+void testesTelaParadaPerto() {
+  testWidgets('sem localização, oferece achar a parada mais perto', (t) async {
+    await _abrirComLocal(t, null);
+    expect(find.text('Qual parada fica mais perto de mim?'), findsOneWidget);
+    expect(find.textContaining('Parada mais perto de você'), findsNothing);
+  });
+
+  testWidgets(
+    'com localização, mostra a parada da linha mais perto e a destaca na lista',
+    (t) async {
+      final s = _linhas().porNumero['620']!.sentidos.first;
+      await _abrirComLocal(t, s.paradas[3].pos);
+      await t.pump(const Duration(milliseconds: 300));
+      expect(find.textContaining('Parada mais perto de você'), findsOneWidget);
+      expect(
+        find.text('Sem passagem desta linha nas próximas horas'),
+        findsOneWidget,
+      );
+      await t.tap(find.textContaining('Parada mais perto de você'));
+      await t.pumpAndSettle();
+      expect(find.text('PARADA'), findsOneWidget);
+    },
+  );
 }

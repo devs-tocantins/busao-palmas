@@ -6,8 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../../core/formato.dart';
 import '../../core/rotas.dart';
 import '../../core/tema.dart';
+import '../../data/dados_locais.dart' show ParadaLocal;
 import '../../data/linhas_repo.dart';
+import '../../domain/models.dart';
 import '../../state/parada.dart';
+import '../../state/planejador.dart';
 import '../../state/salvos.dart';
 import '../../widgets/estrela.dart';
 import '../../widgets/linha_chip.dart';
@@ -52,15 +55,15 @@ class LinhaPage extends ConsumerWidget {
   }
 }
 
-class _Conteudo extends StatefulWidget {
+class _Conteudo extends ConsumerStatefulWidget {
   const _Conteudo({required this.detalhe});
   final DetalheLinha detalhe;
 
   @override
-  State<_Conteudo> createState() => _ConteudoState();
+  ConsumerState<_Conteudo> createState() => _ConteudoState();
 }
 
-class _ConteudoState extends State<_Conteudo> {
+class _ConteudoState extends ConsumerState<_Conteudo> {
   final _mapa = MapController();
   int _sentido = 0;
   int? _servico; // null = o de hoje
@@ -79,6 +82,8 @@ class _ConteudoState extends State<_Conteudo> {
     final cs = Theme.of(context).colorScheme;
     final l = widget.detalhe.linha;
     final s = _s;
+    final minha = ref.watch(planejadorProvider.select((x) => x.minhaPos));
+    final perto = minha == null ? null : s.maisPerto(minha);
     final servico = s.servicos.isEmpty ? null : s.servicos[_servicoAtual];
     final hojeVale = servico?.vale(DadosLinhas.hoje()) ?? false;
     final agora = horaPalmas(DateTime.now());
@@ -163,11 +168,55 @@ class _ConteudoState extends State<_Conteudo> {
                         ),
                       ],
                     ),
+                    // Todas as paradas do percurso; a mais perto da pessoa fica maior.
+                    CircleLayer(
+                      circles: [
+                        for (final p in s.paradas)
+                          CircleMarker(
+                            point: p.pos,
+                            radius: 3.5,
+                            color: Colors.white,
+                            borderColor: l.cor,
+                            borderStrokeWidth: 2,
+                          ),
+                      ],
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        if (perto != null)
+                          marcadorPonto(
+                            s.paradas[perto.indice].pos,
+                            destino: true,
+                            context: context,
+                          ),
+                        if (minha != null)
+                          marcadorPonto(
+                            minha,
+                            destino: false,
+                            context: context,
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
           ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Tokens.margem,
+            12,
+            Tokens.margem,
+            0,
+          ),
+          child: perto == null
+              ? const _PedirLocalizacao()
+              : _ParadaMaisPerto(
+                  numero: l.numero,
+                  parada: s.paradas[perto.indice],
+                  metros: perto.metros,
+                ),
+        ),
         const SizedBox(height: 20),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Tokens.margem),
@@ -257,7 +306,15 @@ class _ConteudoState extends State<_Conteudo> {
                 style: TextStyle(fontSize: 11, color: l.corTexto),
               ),
             ),
-            title: Text(s.paradas[i].nome),
+            title: Text(
+              s.paradas[i].nome,
+              style: i == perto?.indice
+                  ? const TextStyle(fontWeight: FontWeight.w800)
+                  : null,
+            ),
+            subtitle: i == perto?.indice
+                ? const Text('Mais perto de você')
+                : null,
             onTap: () => context.push(
               caminhoParada(s.paradas[i].nome, s.paradas[i].pos),
             ),
@@ -302,6 +359,100 @@ class _Horario extends StatelessWidget {
               ? Colors.black
               : (passou ? cs.onSurfaceVariant : cs.onSurface),
           decoration: passou ? TextDecoration.lineThrough : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// Pede a localização para achar a parada da linha mais perto de quem está olhando.
+class _PedirLocalizacao extends ConsumerWidget {
+  const _PedirLocalizacao();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final buscando = ref.watch(
+      planejadorProvider.select((x) => x.buscandoLocalizacao),
+    );
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.my_location_rounded),
+        title: const Text('Qual parada fica mais perto de mim?'),
+        subtitle: Text(
+          buscando ? 'Buscando sua localização…' : 'Usar minha localização',
+        ),
+        onTap: buscando
+            ? null
+            : ref.read(planejadorProvider.notifier).usarMinhaLocalizacao,
+      ),
+    );
+  }
+}
+
+/// A parada da linha mais perto da pessoa, com a próxima passagem desta linha ali.
+class _ParadaMaisPerto extends ConsumerWidget {
+  const _ParadaMaisPerto({
+    required this.numero,
+    required this.parada,
+    required this.metros,
+  });
+
+  final String numero;
+  final ParadaLocal parada;
+  final double metros;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    final ref0 = ParadaRef(nome: parada.nome, pos: parada.pos);
+    final saidas = ref.watch(saidasProvider(ref0));
+    final proxima = saidas.value
+        ?.where((x) => x.linha == numero)
+        .map((x) => x.proxima)
+        .fold<Chegada?>(
+          null,
+          (a, b) => a == null || b.horario.isBefore(a.horario) ? b : a,
+        );
+    final detalhe = saidas.isLoading
+        ? 'Carregando horários…'
+        : proxima == null
+        ? 'Sem passagem desta linha nas próximas horas'
+        : 'Próximo ônibus: ${faltaTexto(proxima)}${proxima.aoVivo ? ' · ao vivo' : ''}';
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.push(caminhoParada(parada.nome, parada.pos)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+          child: Row(
+            children: [
+              const Icon(Icons.location_on_rounded),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Parada mais perto de você · ${distanciaTexto(metros)}',
+                      style: t.labelMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                    Text(
+                      parada.nome,
+                      style: t.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(detalhe, style: t.bodySmall),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+            ],
+          ),
         ),
       ),
     );

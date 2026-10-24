@@ -56,31 +56,29 @@ quando `alerts` tiver conteúdo) e estados de erro e sem internet ([DESIGN.md](D
 
 ## Plano
 
-Cada marco entrega algo usável. Tela só vira código depois de protótipo aprovado.
+Cada marco entrega algo usável. Não há protótipo separado: as telas são feitas direto no app, em fatias pequenas, e a comunidade testa versões reais (APK e site) a cada marco.
 
 | Marco | Entrega | Pronto quando |
 |---|---|---|
-| **P. Protótipo** | Telas 1 a 6 navegáveis no celular, com dados reais | 5 moradores concluem "ver quando passa o ônibus da minha parada" e "ir de A para B" sem ajuda |
 | **M0. Fundação** | Projeto Flutter em `app/`, tema, navegação com as 4 abas, leitura de `data/gerado/`, proxy para a web | `flutter run` abre no Android e no navegador mostrando "atualizado em [data]" |
 | **M1. Início, busca e mapa** (1, 2, 3) | Mapa com paradas próximas; busca de lugar, parada e linha; pino no mapa | "uft", "104 sul" e "palmas shopping" acham o lugar; busca de 1–2 letras e sem internet funciona pelo índice local |
-| **M2. Rota de A para B** (4, 5) | Planejador com "sair/chegar às", trocas, ônibus equivalentes e linha do tempo | Os 15 casos de [CASOS_ROTA.md](CASOS_ROTA.md) dão no app o mesmo resultado do script; 5 trajetos conferem com o SOU |
-| **M3. Parada ao vivo** (6) | Próximos ônibus com atualização a cada 20 s, grade do dia, favoritar | 10 paradas conferem com o SOU (mesmas linhas, horários até 1 min de diferença) |
+| **M2. Rota de A para B** (4, 5) | Planejador com "sair/chegar às", trocas, ônibus equivalentes e linha do tempo | Os 15 casos de [CASOS_ROTA.md](CASOS_ROTA.md) dão no app o mesmo resultado do script; 5 trajetos conferem com o SOU; **5 moradores concluem "ir de A para B" sem ajuda** |
+| **M3. Parada ao vivo** (6) | Próximos ônibus com atualização a cada 20 s, grade do dia, favoritar | 10 paradas conferem com o SOU (mesmas linhas, horários até 1 min de diferença); **5 moradores concluem "ver quando passa o ônibus da minha parada" sem ajuda** |
 | **M4. Linhas** (7, 8) | Lista, trajeto, paradas em ordem, horários, ônibus ao vivo | As 47 linhas abrem; trajeto e horários de 5 linhas conferem com o SOU |
 | **M5. Favoritos, mais e primeira abertura** (9, 10, 11) | Telas restantes e aviso de chegada com o app aberto | Favoritos sobrevivem a fechar o app; a localização só é pedida depois da explicação |
 | **M6. Qualidade** | Acessibilidade, offline, desempenho em celular simples, testes | Leitor de tela lê as 11 telas; 3 s para abrir com dados salvos; beta fechado com a comunidade |
 
-Ordem: P → M0 → M1 → M2 → M3 → M4 → M5 → M6. M3 e M4 são independentes e podem andar em paralelo.
+Ordem: M0 → M1 → M2 → M3 → M4 → M5 → M6. M3 e M4 são independentes e podem andar em paralelo.
 
-### Cada tela, antes de virar código
+### Cada tela, antes de ser construída
 
-1. Protótipo aprovado; componente novo registrado em [DESIGN.md](DESIGN.md).
+1. Layout e componentes novos combinados em [DESIGN.md](DESIGN.md) (um esboço no papel ou na tela basta).
 2. Quatro estados desenhados: carregando, vazio, sem internet, erro.
 3. Fonte dos dados confirmada na tabela acima; se faltar campo, a mudança entra primeiro em `snapshot.mjs` e `validar.mjs`.
 4. Conferência contra o SOU anotada no PR: qual consulta, o que cada app mostrou.
 
 ## Em aberto
 
-- Quem faz o protótipo e onde ele fica.
 - Conferir no SOU o trajeto 1006 Sul → 405 Norte e uma viagem ao aeroporto ([CASOS_ROTA.md](CASOS_ROTA.md)).
 - Formato dos avisos quando houver um real.
 - Termos de uso do geocodificador e da API: antes de publicar.

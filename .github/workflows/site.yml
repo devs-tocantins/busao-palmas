@@ -35,7 +35,8 @@ jobs:
           flutter-version: 3.47.8
           cache: true
 
-      - run: flutter pub get
+      # Falha se o pubspec.lock não bater com o pubspec.yaml, em vez de baixar versões diferentes das testadas.
+      - run: flutter pub get --enforce-lockfile
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --base-href /busao-palmas/ --no-wasm-dry-run

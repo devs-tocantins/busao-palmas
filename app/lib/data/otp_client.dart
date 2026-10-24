@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../core/config.dart';
 import '../domain/models.dart';
+import 'busca_local.dart' show semAcento;
 import 'dados_locais.dart';
 
 class SemRota implements Exception {
@@ -57,7 +58,8 @@ class OtpClient {
   Future<List<Lugar>> buscar(String texto) async {
     final r = await _dio.get(
       '/otp/geocode',
-      queryParameters: {'address': texto},
+      // O geocodificador erra com acento ("rodoviária" devolve rodovias).
+      queryParameters: {'address': semAcento(texto)},
     );
     final lista = (r.data['results'] as List?) ?? const [];
     return [for (final x in lista) _lugar(x as Map<String, dynamic>)];

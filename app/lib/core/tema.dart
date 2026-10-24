@@ -84,6 +84,19 @@ abstract final class Tema {
           ),
         ),
       ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: cs.surface,
+        indicatorColor: Tokens.amarelo,
+        selectedIconTheme: const IconThemeData(color: Colors.black),
+        unselectedIconTheme: IconThemeData(color: cs.onSurfaceVariant),
+        selectedLabelTextStyle: texto.labelMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: cs.onSurface,
+        ),
+        unselectedLabelTextStyle: texto.labelMedium?.copyWith(
+          color: cs.onSurfaceVariant,
+        ),
+      ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(48, 48),

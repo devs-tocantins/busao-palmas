@@ -3,13 +3,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 
+import '../../core/formato.dart';
 import '../../core/rotas.dart';
 import '../../core/tema.dart';
+import '../../data/busca_local.dart';
 import '../../domain/models.dart';
+import '../../state/parada.dart';
 import '../../state/planejador.dart';
 import '../../state/salvos.dart';
 import '../../widgets/atalhos.dart';
+import '../../widgets/linha_chip.dart';
 
 /// Para que a busca está sendo aberta.
 enum ModoBusca {
@@ -44,6 +49,7 @@ class _BuscaPageState extends ConsumerState<BuscaPage> {
   final _controle = TextEditingController();
   Timer? _espera;
   List<Lugar> _resultados = const [];
+  List<ResultadoBusca> _locais = const [];
   bool _carregando = false;
   Object? _erro;
   int _pedido = 0;
@@ -57,9 +63,28 @@ class _BuscaPageState extends ConsumerState<BuscaPage> {
     super.dispose();
   }
 
+  /// Resultados do aparelho: aparecem a cada letra, sem esperar a rede.
+  List<ResultadoBusca> _buscarLocal(String q) {
+    final indice = ref.read(buscaLocalProvider).value;
+    if (indice == null || q.isEmpty) return const [];
+    final r = indice.buscar(
+      q,
+      perto: ref.read(planejadorProvider).minhaPos,
+      limite: 10,
+    );
+    // Casa e trabalho são lugares: linha não serve.
+    return _modo.ehViagem
+        ? r
+        : [
+            for (final x in r)
+              if (x.tipo != TipoBusca.linha) x,
+          ];
+  }
+
   void _digitou(String texto) {
     _espera?.cancel();
     final q = texto.trim();
+    _locais = _buscarLocal(q);
     if (q.length < 3) {
       setState(() {
         _resultados = const [];
@@ -124,7 +149,24 @@ class _BuscaPageState extends ConsumerState<BuscaPage> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final t = Theme.of(context).textTheme;
-    final digitou = _controle.text.trim().length >= 3;
+    // Começa a ler o índice local e refaz a busca quando ele ficar pronto.
+    ref.listen(buscaLocalProvider, (_, _) {
+      if (!mounted) return;
+      setState(() => _locais = _buscarLocal(_controle.text.trim()));
+    });
+    final digitou = _controle.text.trim().isNotEmpty;
+    final minha = ref.watch(planejadorProvider.select((x) => x.minhaPos));
+    // O que o aparelho achou vem primeiro; o servidor entra no que sobra, sem repetir.
+    final locais = _locais;
+    final jaTem = {
+      for (final x in locais)
+        if (x.pos != null) normalizar(x.titulo),
+    };
+    final servidor = [
+      for (final l in _resultados)
+        if (!jaTem.contains(normalizar(l.nome))) l,
+    ];
+    final vazio = locais.isEmpty && servidor.isEmpty;
 
     return Scaffold(
       appBar: AppBar(title: Text(_modo.titulo)),
@@ -202,7 +244,7 @@ class _BuscaPageState extends ConsumerState<BuscaPage> {
                       style: t.bodyMedium?.copyWith(color: cs.error),
                     ),
                   )
-                else if (digitou && !_carregando && _resultados.isEmpty)
+                else if (digitou && !_carregando && vazio)
                   Padding(
                     padding: const EdgeInsets.all(Tokens.margem),
                     child: Text(
@@ -228,7 +270,7 @@ class _BuscaPageState extends ConsumerState<BuscaPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Digite pelo menos 3 letras. Ex.: uft, palmas shopping, 104 sul.',
+                          'Digite um lugar, endereço, parada ou linha. Ex.: uft, palmas shopping, 104 sul, 090.',
                           style: t.bodyMedium?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -236,7 +278,15 @@ class _BuscaPageState extends ConsumerState<BuscaPage> {
                       ],
                     ),
                   ),
-                for (final l in _resultados)
+                for (final r in locais)
+                  _ItemLocal(
+                    r: r,
+                    minha: minha,
+                    aoEscolher: r.tipo == TipoBusca.linha
+                        ? () => context.push('/linha/${r.linha}')
+                        : () => _escolher(r.lugar!),
+                  ),
+                for (final l in servidor)
                   ListTile(
                     minVerticalPadding: 10,
                     leading: Icon(
@@ -289,6 +339,62 @@ class _BuscaPageState extends ConsumerState<BuscaPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Uma linha de resultado vinda do aparelho: ícone ou etiqueta pelo tipo, e a distância até a pessoa.
+class _ItemLocal extends ConsumerWidget {
+  const _ItemLocal({
+    required this.r,
+    required this.minha,
+    required this.aoEscolher,
+  });
+
+  final ResultadoBusca r;
+  final LatLng? minha;
+  final VoidCallback aoEscolher;
+
+  static IconData _icone(ResultadoBusca r) => switch (r.categoria) {
+    'parada' => Icons.directions_bus_rounded,
+    'aeroporto' => Icons.flight_rounded,
+    'educacao' => Icons.school_outlined,
+    'saude' => Icons.local_hospital_outlined,
+    'comercio' => Icons.shopping_bag_outlined,
+    'lazer' => Icons.park_outlined,
+    'culto' => Icons.church_outlined,
+    'bairro' => Icons.location_city_rounded,
+    _ => Icons.place_outlined,
+  };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final dados = ref.watch(dadosLocaisProvider);
+    final linha = r.tipo == TipoBusca.linha;
+    final dist = (minha != null && r.pos != null)
+        ? distanciaTexto(const Distance().as(LengthUnit.Meter, minha!, r.pos!))
+        : null;
+    final detalhe = [
+      if (linha) 'Linha de ônibus' else if (r.detalhe != null) r.detalhe!,
+      if (dist != null) 'a $dist',
+    ].join(' · ');
+    return ListTile(
+      minVerticalPadding: 10,
+      leading: linha
+          ? SizedBox(
+              width: 72,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: LinhaChip.de(dados.linhas[r.linha], r.linha!),
+              ),
+            )
+          : Icon(_icone(r), color: cs.onSurfaceVariant),
+      title: Text(r.titulo, maxLines: 2, overflow: TextOverflow.ellipsis),
+      subtitle: detalhe.isEmpty
+          ? null
+          : Text(detalhe, maxLines: 1, overflow: TextOverflow.ellipsis),
+      onTap: aoEscolher,
     );
   }
 }

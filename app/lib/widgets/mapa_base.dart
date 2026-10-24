@@ -19,6 +19,8 @@ class MapaBase extends ConsumerWidget {
     this.zoom,
     this.interativo = true,
     this.ajuste,
+    this.botoes = false,
+    this.aoLocalizar,
   });
 
   final MapController controller;
@@ -32,6 +34,10 @@ class MapaBase extends ConsumerWidget {
 
   /// Enquadramento inicial (por exemplo, o percurso inteiro de uma linha). Vale sobre [centro] e [zoom].
   final CameraFit? ajuste;
+
+  /// Mostra + e − (e "minha localização", se [aoLocalizar] vier). Para quem usa mouse: não há como dar pinça.
+  final VoidCallback? aoLocalizar;
+  final bool botoes;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,6 +69,7 @@ class MapaBase extends ConsumerWidget {
             tileProviders: estilo.providers,
           ),
         ...children,
+        if (botoes) _Botoes(controller: controller, aoLocalizar: aoLocalizar),
         const RichAttributionWidget(
           alignment: AttributionAlignment.bottomLeft,
           attributions: [TextSourceAttribution(Config.atribuicao)],
@@ -103,4 +110,57 @@ Marker marcadorPonto(
             ),
           ),
   );
+}
+
+/// Botões de zoom (+ e −) e de "minha localização" no canto do mapa.
+class _Botoes extends StatelessWidget {
+  const _Botoes({required this.controller, this.aoLocalizar});
+
+  final MapController controller;
+  final VoidCallback? aoLocalizar;
+
+  void _zoom(double delta) {
+    final c = controller.camera;
+    controller.move(c.center, (c.zoom + delta).clamp(9, 19));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    Widget botao(IconData i, String dica, VoidCallback f) => Tooltip(
+      message: dica,
+      child: Material(
+        color: cs.surface,
+        elevation: 3,
+        shape: const CircleBorder(),
+        child: IconButton(
+          icon: Icon(i),
+          onPressed: f,
+          constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+        ),
+      ),
+    );
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16, bottom: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (aoLocalizar != null) ...[
+              botao(
+                Icons.my_location_rounded,
+                'Minha localização',
+                aoLocalizar!,
+              ),
+              const SizedBox(height: 12),
+            ],
+            botao(Icons.add_rounded, 'Aproximar', () => _zoom(1)),
+            const SizedBox(height: 8),
+            botao(Icons.remove_rounded, 'Afastar', () => _zoom(-1)),
+          ],
+        ),
+      ),
+    );
+  }
 }

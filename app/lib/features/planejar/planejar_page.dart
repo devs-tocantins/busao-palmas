@@ -10,6 +10,8 @@ import '../../core/tema.dart';
 import '../../data/otp_client.dart' show SemRota;
 import '../../domain/models.dart';
 import '../../state/planejador.dart';
+import '../../state/salvos.dart';
+import '../../widgets/atalhos.dart';
 import '../../widgets/mapa_base.dart';
 import '../../widgets/sequencia_rota.dart';
 
@@ -330,7 +332,7 @@ class _PainelOpcoes extends ConsumerWidget {
     final temResultado =
         s.grupos is AsyncData && (s.grupos.value?.isNotEmpty ?? false);
     final tamanho = s.destino == null
-        ? 0.2
+        ? 0.5
         : temResultado
         ? 0.44
         : (s.grupos is AsyncError ? 0.62 : 0.3);
@@ -342,14 +344,17 @@ class _PainelOpcoes extends ConsumerWidget {
       maxChildSize: 0.92,
       snap: true,
       snapSizes: [tamanho, 0.92],
-      builder: (context, scroll) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: const BorderRadius.vertical(
+      // Material (e não um fundo liso) para os itens da lista mostrarem o efeito de toque.
+      builder: (context, scroll) => Material(
+        color: cs.surface,
+        elevation: 12,
+        shadowColor: Colors.black45,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
             top: Radius.circular(Tokens.raioPainel),
           ),
-          boxShadow: const [BoxShadow(blurRadius: 14, color: Colors.black26)],
         ),
+        clipBehavior: Clip.antiAlias,
         child: ListView(
           controller: scroll,
           padding: const EdgeInsets.fromLTRB(
@@ -371,6 +376,7 @@ class _PainelOpcoes extends ConsumerWidget {
               ),
             ),
             ..._conteudo(context, ref, s),
+            if (s.destino != null) _SalvarDestino(destino: s.destino!),
           ],
         ),
       ),
@@ -396,6 +402,20 @@ class _PainelOpcoes extends ConsumerWidget {
           'Busque um lugar ou toque no mapa.',
           style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
         ),
+        const SizedBox(height: 16),
+        AtalhosCasaTrabalho(
+          aoEscolher: (l) =>
+              ref.read(planejadorProvider.notifier).definirDestino(l),
+          aoDefinir: (a) => context.push(
+            a == Atalho.casa ? '/busca/casa' : '/busca/trabalho',
+          ),
+        ),
+        const SizedBox(height: 12),
+        ListaRecentes(
+          max: 4,
+          aoEscolher: (l) =>
+              ref.read(planejadorProvider.notifier).definirDestino(l),
+        ),
       ];
     }
     if (s.origem == null) {
@@ -410,7 +430,9 @@ class _PainelOpcoes extends ConsumerWidget {
           style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: 12),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
             FilledButton.icon(
               onPressed: () =>
@@ -418,7 +440,6 @@ class _PainelOpcoes extends ConsumerWidget {
               icon: const Icon(Icons.my_location_rounded),
               label: const Text('Usar minha localização'),
             ),
-            const SizedBox(width: 8),
             OutlinedButton(
               onPressed: () => context.push('/busca/origem'),
               child: const Text('Escolher'),
@@ -550,6 +571,10 @@ class _CartaoRota extends ConsumerWidget {
         borderRadius: BorderRadius.circular(Tokens.raioCartao),
         onTap: () {
           ref.read(planejadorProvider.notifier).selecionar(grupo);
+          final destino = ref.read(planejadorProvider).destino;
+          if (destino != null) {
+            ref.read(salvosProvider.notifier).registrarRecente(destino);
+          }
           context.push('/rota');
         },
         child: Padding(
@@ -665,6 +690,56 @@ class _ProximaSaida extends ConsumerWidget {
                 ),
             child: Text('Ver rota das ${horaPalmas(proxima)}'),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Salvar este destino como: Casa | Trabalho". Some se o destino já é um dos dois.
+class _SalvarDestino extends ConsumerWidget {
+  const _SalvarDestino({required this.destino});
+
+  final Lugar destino;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final salvos = ref.watch(salvosProvider).value ?? const Salvos();
+    bool ja(Lugar? l) => l != null && l.nome == destino.nome;
+    final opcoes = [
+      if (!ja(salvos.casa)) Atalho.casa,
+      if (!ja(salvos.trabalho)) Atalho.trabalho,
+    ];
+    if (opcoes.isEmpty || destino.nome == 'Ponto no mapa') {
+      return const SizedBox.shrink();
+    }
+    final cs = Theme.of(context).colorScheme;
+    final n = ref.read(salvosProvider.notifier);
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            'Salvar destino:',
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          for (final a in opcoes)
+            ActionChip(
+              avatar: Icon(a.icone, size: 18),
+              label: Text(a.rotulo),
+              onPressed: () {
+                a == Atalho.casa
+                    ? n.definirCasa(destino)
+                    : n.definirTrabalho(destino);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${a.rotulo} salva: ${destino.nome}')),
+                );
+              },
+            ),
         ],
       ),
     );

@@ -2,7 +2,7 @@
 
 App gratuito, sem login, para ver ônibus de Palmas-TO, feito pela comunidade Devs Tocantins.
 Independente da SOU Palmas e da Mobilibus. Primeira funcionalidade: [rota de A para B](UX_ROTA.md).
-Contrato da API de dados: [API_MOBILIBUS.md](API_MOBILIBUS.md).
+API de origem: [API_MOBILIBUS.md](API_MOBILIBUS.md). Arquivos que o app lê: [DADOS.md](DADOS.md).
 
 ## Decisões
 
@@ -50,9 +50,9 @@ busao-palmas/
 GitHub Action diária. Baixa linhas, horários, `trip-details` (sem a parte `vehicles`) e varre os tiles de Palmas em `stops`.
 Guarda `version` e `generatedAt`; o app mostra a data.
 
-**Nome das paradas** (`tools/paradas.mjs`). A API devolve só o código em 83% das paradas. Ordem de prioridade do nome:
+**Nome das paradas** (`tools/snapshot.mjs`, `tools/nomes-paradas.mjs`). A API devolve só o código em 83% das paradas. Ordem de prioridade do nome:
 correção da comunidade (`data/paradas_nomes.json`) → nome da API, limpo → OpenStreetMap (`Rua × rua que cruza`, ou `Rua · perto de <lugar>`,
-ou `Região <bairro>`) → `Parada <código>`. Resultado em 2026-10-24: 1064 paradas; 178 pelo nome da API, 729 pelo OSM, 157 só código (15%).
+ou `Região <bairro>`) → `Parada <código>`. Resultado em 2026-10-24: 1210 paradas; 200 pelo nome da API, 817 pelo OSM, 193 só código (16%).
 As quadras de Palmas quase não têm nome no OSM, por isso usamos rua e cruzamento.
 
 **Busca de lugares** (`tools/indice-busca.mjs`). Índice próprio, sem servidor: 2962 itens (2113 ruas, 34 bairros, ~800 lugares),

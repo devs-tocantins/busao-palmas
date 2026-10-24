@@ -4,7 +4,8 @@
   "type": "module",
   "engines": { "node": ">=20" },
   "scripts": {
-    "paradas": "node paradas.mjs",
+    "snapshot": "node snapshot.mjs",
+    "validar": "node validar.mjs",
     "busca": "node indice-busca.mjs"
   }
 }

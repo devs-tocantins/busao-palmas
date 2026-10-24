@@ -38,7 +38,7 @@ Não comparado com o resultado do Moovit (coordenadas e hora diferentes).
 
 ## Riscos
 
-- **Nome das paradas:** resolvido em 85% (ver [ARQUITETURA](ARQUITETURA.md)); 15% ficam como "Parada <código>" até a comunidade corrigir.
+- **Nome das paradas:** resolvido em 84% (ver [ARQUITETURA](ARQUITETURA.md)); 16% ficam como "Parada <código>" até a comunidade corrigir.
   O Moovit mostra "Ponto Nº 0208 Q. 1004 Sul Avenida Ns 4"; a nossa fonte não tem esse número. Foto da parada: sem fonte.
 - **Busca por lugar:** resolvida com índice próprio (ver [ARQUITETURA](ARQUITETURA.md)). Limite: só acha o que está no OpenStreetMap.
 - **Qualidade do plano:** validar com trajetos que a população conhece antes de confiar.

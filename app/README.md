@@ -24,9 +24,24 @@ flutter build web --release         # site em build/web/
 - **Nome legível das paradas e cor das linhas:** `assets/data/paradas.json` e `assets/data/linhas.json`,
   cópias de `data/gerado/` (gerado por `tools/snapshot.mjs`, formato em [docs/DADOS.md](../docs/DADOS.md)).
   Para atualizar: `cd tools && node snapshot.mjs`, depois copie os dois arquivos para `app/assets/data/`.
-- **Mapa:** estilos Positron (claro) e Dark do OpenFreeMap (gratuito, sem chave, dados do OpenStreetMap), desenhados no aparelho com `vector_map_tiles`.
-  Uso gratuito com atribuição, pensado para volume baixo. Antes do lançamento público, trocar por tiles próprios
-  (PMTiles do Tocantins ou OpenFreeMap) e conferir os termos: https://carto.com/basemaps.
+- **Mapa:** estilos Positron (claro) e Dark do OpenFreeMap (gratuito, sem chave, dados do OpenStreetMap), desenhados no aparelho
+  com `vector_map_tiles`. Retiramos do estilo os nomes de ruas pequenas (`lib/state/mapa.dart`). Atribuição sempre visível.
+  O OpenFreeMap vive de doações: se o app crescer, apoiar ou trocar por tiles próprios (PMTiles do Tocantins).
+  O CARTO foi testado e descartado: passou a exigir chave.
+
+## Site publicado
+
+**https://devs-tocantins.github.io/busao-palmas/** (GitHub Pages, branch `gh-pages`, HTTPS).
+
+Publicado à mão em 2026-10-24 a partir da branch `m0-rota`. Para republicar:
+
+1. `cd app && flutter build web --release --base-href /busao-palmas/`
+2. Copie `build/web` para uma pasta **nova, vazia e fora do repositório**.
+3. Nessa pasta: copie `index.html` para `404.html` (links internos como `/rota` caem no app em vez de dar 404) e crie um arquivo vazio `.nojekyll`.
+4. Nessa pasta: `git init -b gh-pages`, `git add -A`, `git commit`, `git remote add origin <url do repositório>` e `git push -f origin gh-pages`.
+
+O site leva cerca de 1 minuto para atualizar. O ideal é trocar isso por uma GitHub Action que publica a cada merge na `main` (ainda não existe).
+Cuidado no passo 4: confira que está na pasta nova, e não dentro de `app/`.
 
 ## Link de rota (web)
 

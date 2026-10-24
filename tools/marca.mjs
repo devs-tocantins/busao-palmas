@@ -1,4 +1,4 @@
-// Gera a marca (SVG + PNG) em app/assets/brand/. Uso: node marca.mjs [caminho-da-fonte-Roboto-Black.ttf]
+// Gera a marca (SVG + PNG) em app/assets/brand/. Uso: node marca.mjs
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +11,7 @@ mkdirSync(saida, { recursive: true });
 
 const AMARELO = '#FFD100';
 const PRETO = '#111111';
-const fonte = process.argv[2] ?? 'C:/Users/LeonardoViniciusBati/dev/flutter/bin/cache/artifacts/material_fonts/roboto-black.ttf';
+const fonte = join(aqui, 'fontes', 'Roboto-Black.ttf'); // Roboto, Apache 2.0
 
 // Frente de ônibus em tela 1024. Os recortes (janela, pino, faróis, grade) são furos de verdade,
 // então o símbolo funciona sobre qualquer cor de fundo.

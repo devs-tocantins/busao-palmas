@@ -8,13 +8,23 @@ import '../domain/models.dart';
 
 /// Atalhos e histórico, guardados só no aparelho (sem conta).
 class Salvos {
-  const Salvos({this.casa, this.trabalho, this.recentes = const []});
+  const Salvos({
+    this.casa,
+    this.trabalho,
+    this.recentes = const [],
+    this.paradasFavoritas = const [],
+    this.linhasFavoritas = const [],
+  });
 
   final Lugar? casa;
   final Lugar? trabalho;
 
   /// Do mais novo para o mais antigo.
   final List<Lugar> recentes;
+
+  /// Paradas e números de linha marcados com a estrela, na ordem em que foram marcados.
+  final List<ParadaRef> paradasFavoritas;
+  final List<String> linhasFavoritas;
 
   static const maxRecentes = 8;
 
@@ -24,10 +34,14 @@ class Salvos {
     Lugar? trabalho,
     bool limparTrabalho = false,
     List<Lugar>? recentes,
+    List<ParadaRef>? paradasFavoritas,
+    List<String>? linhasFavoritas,
   }) => Salvos(
     casa: limparCasa ? null : (casa ?? this.casa),
     trabalho: limparTrabalho ? null : (trabalho ?? this.trabalho),
     recentes: recentes ?? this.recentes,
+    paradasFavoritas: paradasFavoritas ?? this.paradasFavoritas,
+    linhasFavoritas: linhasFavoritas ?? this.linhasFavoritas,
   );
 
   Map<String, dynamic> toJson() => {
@@ -35,6 +49,8 @@ class Salvos {
     if (casa != null) 'casa': casa!.toJson(),
     if (trabalho != null) 'trabalho': trabalho!.toJson(),
     'recentes': [for (final l in recentes) l.toJson()],
+    'paradasFavoritas': [for (final p in paradasFavoritas) p.toJson()],
+    'linhasFavoritas': linhasFavoritas,
   };
 
   static Salvos fromJson(Map<String, dynamic> j) => Salvos(
@@ -47,6 +63,13 @@ class Salvos {
     recentes: [
       for (final l in (j['recentes'] as List? ?? const []))
         Lugar.fromJson(l as Map<String, dynamic>),
+    ],
+    paradasFavoritas: [
+      for (final p in (j['paradasFavoritas'] as List? ?? const []))
+        ParadaRef.fromJson(p as Map<String, dynamic>),
+    ],
+    linhasFavoritas: [
+      for (final l in (j['linhasFavoritas'] as List? ?? const [])) l as String,
     ],
   );
 }
@@ -98,6 +121,23 @@ class SalvosNotifier extends AsyncNotifier<Salvos> {
   Future<void> removerRecente(Lugar l) => _gravar(
     _atual.copyWith(
       recentes: _atual.recentes.where((x) => !_mesmoLugar(x, l)).toList(),
+    ),
+  );
+
+  /// Marca ou desmarca a estrela de uma parada.
+  Future<void> alternarParada(ParadaRef p) => _gravar(
+    _atual.copyWith(
+      paradasFavoritas: _atual.paradasFavoritas.contains(p)
+          ? _atual.paradasFavoritas.where((x) => x != p).toList()
+          : [..._atual.paradasFavoritas, p],
+    ),
+  );
+
+  Future<void> alternarLinha(String numero) => _gravar(
+    _atual.copyWith(
+      linhasFavoritas: _atual.linhasFavoritas.contains(numero)
+          ? _atual.linhasFavoritas.where((x) => x != numero).toList()
+          : [..._atual.linhasFavoritas, numero],
     ),
   );
 

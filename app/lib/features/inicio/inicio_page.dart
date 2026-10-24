@@ -8,6 +8,7 @@ import '../../core/tema.dart';
 import '../../domain/models.dart';
 import '../../state/parada.dart';
 import '../../state/planejador.dart';
+import '../../state/salvos.dart';
 import '../../widgets/atalhos.dart';
 import '../../widgets/linha_chip.dart';
 
@@ -56,12 +57,65 @@ class InicioPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
+              const _Favoritos(),
               const _PertoDeVoce(),
               const SizedBox(height: 16),
               ListaRecentes(max: 4, aoEscolher: plan.definirDestino),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Linhas e paradas marcadas com a estrela. Some se não há nenhuma.
+class _Favoritos extends ConsumerWidget {
+  const _Favoritos();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final salvos = ref.watch(salvosProvider).value ?? const Salvos();
+    if (salvos.linhasFavoritas.isEmpty && salvos.paradasFavoritas.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final dados = ref.watch(dadosLocaisProvider);
+    final t = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Favoritos',
+            style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          if (salvos.linhasFavoritas.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final n in salvos.linhasFavoritas)
+                    InkWell(
+                      borderRadius: BorderRadius.circular(999),
+                      onTap: () => context.push('/linha/$n'),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: LinhaChip.de(dados.linhas[n], n, grande: true),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          for (final p in salvos.paradasFavoritas)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _CartaoParada(parada: p),
+            ),
+        ],
       ),
     );
   }
@@ -215,10 +269,12 @@ class _Aviso extends StatelessWidget {
 }
 
 class _CartaoParada extends ConsumerWidget {
-  const _CartaoParada({required this.parada, required this.metros});
+  const _CartaoParada({required this.parada, this.metros});
 
   final ParadaRef parada;
-  final double metros;
+
+  /// Distância até a pessoa; não aparece nos favoritos.
+  final double? metros;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -249,10 +305,13 @@ class _CartaoParada extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    distanciaTexto(metros),
-                    style: t.labelMedium?.copyWith(color: cs.onSurfaceVariant),
-                  ),
+                  if (metros != null)
+                    Text(
+                      distanciaTexto(metros!),
+                      style: t.labelMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
                   Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
                 ],
               ),

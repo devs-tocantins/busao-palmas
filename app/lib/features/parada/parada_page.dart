@@ -9,6 +9,8 @@ import '../../core/tema.dart';
 import '../../domain/models.dart';
 import '../../state/parada.dart';
 import '../../state/planejador.dart';
+import '../../state/salvos.dart';
+import '../../widgets/estrela.dart';
 import '../../widgets/linha_chip.dart';
 
 /// Quando passa o ônibus numa parada: próximas passagens por linha, ao vivo quando há GPS.
@@ -59,7 +61,19 @@ class _ParadaPageState extends ConsumerState<ParadaPage> {
     final t = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Parada')),
+      appBar: AppBar(
+        title: const Text('Parada'),
+        actions: [
+          BotaoEstrela(
+            oQue: 'parada',
+            marcado: (ref.watch(salvosProvider).value ?? const Salvos())
+                .paradasFavoritas
+                .contains(widget.parada),
+            aoAlternar: () =>
+                ref.read(salvosProvider.notifier).alternarParada(widget.parada),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           _atualizar();

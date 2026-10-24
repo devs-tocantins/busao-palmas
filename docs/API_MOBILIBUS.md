@@ -52,3 +52,16 @@ Exemplo: centro de Palmas, zoom 16 → `5992,8657,16` (59 paradas).
 
 Endpoints que o app oficial não expõe na tela foram confirmados com a pesquisa de
 [lucasbrisolla/onibus-bh](https://github.com/lucasbrisolla/onibus-bh/blob/main/docs/mobilibus-otimo-api-research.md) (MIT) e testados em Palmas.
+
+## Geocodificador e avisos (verificado 2026-10-24)
+
+Mesma base do OTP (`otpUri`). É o que o app SOU usa para buscar lugares. Aceita chamada do navegador (CORS aberto).
+
+| Endpoint | Parâmetros | Devolve |
+|---|---|---|
+| `{otpUri}/otp/geocode` | `address` (mínimo 3 letras; com 1 ou 2 não devolve nada) | `{ count, results: [{ id, provider, lat, lng, description, street, number, postalCode, city, importance, ... }] }`. `provider` é `Bus2` (OpenStreetMap: lugares, ruas, endereços) ou `GTFS` (paradas de ônibus) |
+| `{otpUri}/otp/geocode/reverse` | `lat`, `lon` | mesma estrutura, lugares próximos do ponto |
+| `/news` | `project_id` | lista; vazia hoje |
+| `/alerts` | `project_id` | lista; vazia hoje |
+
+O OTP também aceita `arriveBy=true` no `plan` ("chegar às"). O campo `stops` do GraphQL não existe nessa versão do OTP.

@@ -1,0 +1,10 @@
+{
+  "name": "busao-palmas-tools",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "paradas": "node paradas.mjs",
+    "busca": "node indice-busca.mjs"
+  }
+}

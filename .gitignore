@@ -1,0 +1,24 @@
+# pesquisa local: prints de outros apps, APKs e caches; não vão para o GitHub
+pesquisa/
+tools/.cache/
+data/gerado/
+
+# Flutter / Dart
+.dart_tool/
+build/
+.flutter-plugins*
+.packages
+*.iml
+.idea/
+.vscode/
+app/android/local.properties
+app/android/key.properties
+*.jks
+*.keystore
+
+# Node
+node_modules/
+
+# sistema
+.DS_Store
+Thumbs.db

@@ -1,6 +1,6 @@
 # Montar o ambiente (Windows, sem administrador)
 
-Testado em 2026-10-24 em Windows 11, sem permissão de administrador, com um celular Android 13. Ocupa cerca de 4 GB.
+Testado de ponta a ponta em 2026-10-24: Windows 11 sem permissão de administrador, celular Redmi com Android 13 (HyperOS). Ocupa cerca de 4 GB.
 Para só rodar as ferramentas de dados (`tools/`) basta o Node 20 ou mais novo; o resto é para o app.
 
 | Peça | Versão testada |
@@ -68,9 +68,11 @@ Esperado: `Flutter`, `Android toolchain`, `Chrome` e `Connected device` com ✓.
 
 1. Configurações → Sobre o telefone → toque 7 vezes em "Número da versão".
 2. Opções do desenvolvedor → ligue **Depuração USB**.
-3. **Xiaomi, Redmi e Poco (MIUI/HyperOS):** em geral é preciso ligar também **Instalar via USB** (mesmo menu). Sem isso a instalação pode falhar com
-   `INSTALL_FAILED_USER_RESTRICTED`. Aceite o aviso que aparecer no celular na primeira instalação.
+3. **Xiaomi, Redmi e Poco (MIUI/HyperOS):** ligue também **Instalar via USB** (mesmo menu). Sem isso a instalação falha com
+   `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`.
 4. Conecte o cabo e aceite "Permitir depuração USB?".
+5. Na hora de instalar (`flutter run` ou `adb install`), mantenha a tela **desbloqueada** e toque em **Instalar** no aviso que o celular mostra.
+   Ele some em poucos segundos; se expirar, dá o mesmo erro `Install canceled by user` e basta rodar de novo.
 
 ```powershell
 adb devices      # o aparelho deve aparecer como "device" (não "unauthorized")
@@ -84,4 +86,4 @@ flutter devices
   (ex.: `C:\Users\você\www\busao-palmas`).
 - **Build de teste:** um app Flutter vazio compilou com `flutter build apk --debug` em 138 s (a primeira vez baixa o Gradle e leva mais). O APK de debug tem 144 MB.
 - No PowerShell, `yes | sdkmanager --licenses` não funciona; use o Git Bash.
-- **Não verificado:** instalar e abrir no celular. Parou na etapa 5.3 por falta de "Instalar via USB" no celular de teste.
+- **Verificado:** o APK de teste instalou com `adb install -r` e abriu no celular. Com "Instalar via USB" ligado, as duas primeiras tentativas ainda falharam porque o aviso expirou antes do toque; a terceira funcionou.

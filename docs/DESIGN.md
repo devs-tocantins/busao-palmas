@@ -51,6 +51,14 @@ Nada abaixo de 14.
 - Alvo de toque mínimo 48 × 48. Espaço mínimo de 8 entre alvos.
 - Sombra só no painel que sobe e em cartões flutuantes sobre o mapa.
 
+## Marca
+
+Frente de ônibus preta com um pino de localização no para-brisa, sobre amarelo Palmas (`#FFD100`). Fonte do nome: Roboto Black.
+
+- Arquivos em `app/assets/brand/`: `icone` (app), `icone-primeiro-plano` e `icone-monocromatico` (ícone adaptativo e temático do Android), `simbolo`/`simbolo-claro` (sem fundo), `logo`/`logo-escuro` (símbolo + nome).
+- Tudo é gerado por `tools/marca.mjs` (SVG e PNG). Para mudar a marca, edite o script e rode `cd tools && node marca.mjs`; depois `cd app && dart run flutter_launcher_icons` refaz os ícones do Android e da web.
+- O símbolo tem furos de verdade (janela, faróis, pino), então funciona sobre qualquer cor. Use preto sobre claro e amarelo sobre escuro; não recolorir de outro jeito.
+
 ## Estados que toda tela precisa ter
 
 | Estado | Texto padrão |

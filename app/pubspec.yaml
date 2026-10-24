@@ -44,6 +44,8 @@ dependencies:
   google_fonts: 8.0.0
   intl: ^0.20.3
   flutter_animate: ^4.5.2
+  vector_map_tiles: ^9.0.0-beta.13
+  vector_tile_renderer: ^6.1.0
 
 dev_dependencies:
   flutter_test:

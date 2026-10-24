@@ -7,6 +7,7 @@ import 'package:busao_palmas/data/otp_client.dart';
 import 'package:busao_palmas/domain/models.dart';
 import 'package:busao_palmas/features/planejar/planejar_page.dart';
 import 'package:busao_palmas/features/rota/detalhe_rota_page.dart';
+import 'package:busao_palmas/state/mapa.dart';
 import 'package:busao_palmas/state/planejador.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -84,6 +85,7 @@ Widget appParaTeste(
   return ProviderScope(
     overrides: [
       dadosLocaisProvider.overrideWithValue(dados),
+      estiloMapaProvider.overrideWith((ref, escuro) async => null),
       planejadorProvider.overrideWith(() => _PlanejadorFalso(estado)),
     ],
     child: MaterialApp(
@@ -94,6 +96,8 @@ Widget appParaTeste(
 }
 
 void main() {
+  testesSemRota();
+  testesProximaSaida();
   testWidgets(
     'detalhe da rota mostra a linha do tempo completa (celular, claro)',
     (t) async {
@@ -169,3 +173,93 @@ void main() {
 
 bool tester(WidgetTester t, String texto) =>
     find.text(texto).evaluate().isNotEmpty;
+
+void testesSemRota() {
+  testWidgets('sem ônibus explica o motivo e oferece outros horários', (
+    t,
+  ) async {
+    t.view.physicalSize = const Size(1080, 2400);
+    t.view.devicePixelRatio = 2.75;
+    addTearDown(t.view.reset);
+    final dados = _dados();
+    final estado = PlanejadorState(
+      origem: const Lugar(
+        nome: 'Minha localização',
+        pos: LatLng(-10.28, -48.32),
+      ),
+      destino: const Lugar(
+        nome: 'Quadra 405 Norte',
+        pos: LatLng(-10.16, -48.34),
+      ),
+      grupos: AsyncError(const SemRota('x'), StackTrace.empty),
+    );
+
+    await t.pumpWidget(appParaTeste(estado, dados, const PlanejarPage()));
+    await t.pump(const Duration(milliseconds: 600));
+
+    expect(find.text('Sem ônibus para esse trajeto agora'), findsOneWidget);
+    expect(find.text('Sair às 06:00'), findsOneWidget);
+    expect(find.text('Sair às 17:00'), findsOneWidget);
+    expect(t.takeException(), isNull);
+  });
+}
+
+void testesProximaSaida() {
+  testWidgets(
+    'sem ônibus agora mostra o próximo horário e o botão para vê-lo',
+    (t) async {
+      t.view.physicalSize = const Size(1080, 2400);
+      t.view.devicePixelRatio = 2.75;
+      addTearDown(t.view.reset);
+      // 05:10 em Palmas = 08:10 UTC, no futuro.
+      final proxima = DateTime.now().toUtc().add(
+        const Duration(hours: 5, minutes: 37),
+      );
+      final estado = PlanejadorState(
+        origem: const Lugar(
+          nome: 'Minha localização',
+          pos: LatLng(-10.28, -48.32),
+        ),
+        destino: const Lugar(
+          nome: 'Quadra 405 Norte',
+          pos: LatLng(-10.16, -48.34),
+        ),
+        grupos: AsyncError(const SemRota('x'), StackTrace.empty),
+        proxima: proxima,
+      );
+
+      await t.pumpWidget(appParaTeste(estado, _dados(), const PlanejarPage()));
+      await t.pump(const Duration(milliseconds: 600));
+
+      expect(find.textContaining('Próximo ônibus às'), findsOneWidget);
+      expect(find.textContaining('Sai daqui a'), findsOneWidget);
+      expect(find.textContaining('Ver rota das'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    },
+  );
+
+  testWidgets('procurando o próximo ônibus mostra o aviso de espera', (
+    t,
+  ) async {
+    t.view.physicalSize = const Size(1080, 2400);
+    t.view.devicePixelRatio = 2.75;
+    addTearDown(t.view.reset);
+    final estado = PlanejadorState(
+      origem: const Lugar(
+        nome: 'Minha localização',
+        pos: LatLng(-10.28, -48.32),
+      ),
+      destino: const Lugar(
+        nome: 'Quadra 405 Norte',
+        pos: LatLng(-10.16, -48.34),
+      ),
+      grupos: AsyncError(const SemRota('x'), StackTrace.empty),
+      procurandoProxima: true,
+    );
+
+    await t.pumpWidget(appParaTeste(estado, _dados(), const PlanejarPage()));
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('Procurando o próximo ônibus…'), findsOneWidget);
+    expect(t.takeException(), isNull);
+  });
+}

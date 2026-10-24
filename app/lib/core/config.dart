@@ -14,7 +14,11 @@ abstract final class Config {
   /// Palmas está em UTC-3 o ano todo (sem horário de verão).
   static const fusoPalmas = Duration(hours: -3);
 
-  static const tilesUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  /// Mapa de base minimalista: estilos do OpenFreeMap (gratuito, sem chave, dados do OpenStreetMap).
+  /// https://openfreemap.org — considerar apoiar o projeto se o app crescer.
+  static const estiloClaro = 'https://tiles.openfreemap.org/styles/positron';
+  static const estiloEscuro = 'https://tiles.openfreemap.org/styles/dark';
   static const userAgent = 'br.com.devstocantins.busaopalmas';
-  static const atribuicao = '© colaboradores do OpenStreetMap';
+  static const atribuicao =
+      'OpenFreeMap © OpenMapTiles, dados do OpenStreetMap';
 }

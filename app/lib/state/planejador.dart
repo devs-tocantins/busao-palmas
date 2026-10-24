@@ -28,6 +28,8 @@ class PlanejadorState {
     this.campoMapa = CampoMapa.destino,
     this.buscandoLocalizacao = false,
     this.saida,
+    this.proxima,
+    this.procurandoProxima = false,
   });
 
   final Lugar? origem;
@@ -40,6 +42,10 @@ class PlanejadorState {
   /// null = sair agora. Instante absoluto (UTC); a tela mostra no relógio de Palmas.
   final DateTime? saida;
 
+  /// Quando não há ônibus agora: a primeira saída que o planejador encontrou mais tarde.
+  final DateTime? proxima;
+  final bool procurandoProxima;
+
   PlanejadorState copyWith({
     Lugar? origem,
     Lugar? destino,
@@ -50,6 +56,9 @@ class PlanejadorState {
     bool? buscandoLocalizacao,
     DateTime? saida,
     bool sairAgora = false,
+    DateTime? proxima,
+    bool limparProxima = false,
+    bool? procurandoProxima,
   }) => PlanejadorState(
     origem: origem ?? this.origem,
     destino: destino ?? this.destino,
@@ -58,6 +67,8 @@ class PlanejadorState {
     campoMapa: campoMapa ?? this.campoMapa,
     buscandoLocalizacao: buscandoLocalizacao ?? this.buscandoLocalizacao,
     saida: sairAgora ? null : (saida ?? this.saida),
+    proxima: limparProxima ? null : (proxima ?? this.proxima),
+    procurandoProxima: procurandoProxima ?? this.procurandoProxima,
   );
 }
 
@@ -223,6 +234,8 @@ class PlanejadorNotifier extends Notifier<PlanejadorState> {
     state = state.copyWith(
       grupos: const AsyncLoading(),
       limparSelecionado: true,
+      limparProxima: true,
+      procurandoProxima: false,
     );
     try {
       final opcoes = await ref
@@ -233,7 +246,44 @@ class PlanejadorNotifier extends Notifier<PlanejadorState> {
     } catch (e, s) {
       if (meu != _pedido) return;
       state = state.copyWith(grupos: AsyncError(e, s));
+      if (e is SemRota && state.saida == null) _procurarProxima(o, d, meu);
     }
+  }
+
+  /// Sem ônibus agora: pergunta ao planejador por horários mais tarde e fica com a primeira saída que achar.
+  /// Cobre madrugada e fim de noite (ex.: o Corujão, linha 620, só sai à 00:30, 01:30, 02:30 e 03:30).
+  Future<void> _procurarProxima(Lugar o, Lugar d, int meu) async {
+    state = state.copyWith(procurandoProxima: true);
+    final agora = DateTime.now();
+    final otp = ref.read(otpClientProvider);
+    final saidas = await Future.wait([
+      for (final h in const [1, 2, 3, 4, 5, 6, 8, 12, 16, 20])
+        otp
+            .planejar(
+              de: o.pos,
+              para: d.pos,
+              saida: agora.add(Duration(hours: h)),
+            )
+            .then<DateTime?>(
+              (opcoes) => opcoes
+                  .map((x) => x.inicio)
+                  .reduce((a, b) => a.isBefore(b) ? a : b),
+            )
+            .catchError((_) => null),
+    ]);
+    if (meu != _pedido) return;
+    final achadas = saidas.whereType<DateTime>().toList()..sort();
+    state = state.copyWith(
+      procurandoProxima: false,
+      proxima: achadas.isEmpty ? null : achadas.first,
+      limparProxima: achadas.isEmpty,
+    );
+  }
+
+  /// Sair num instante exato (usado por "Próximo ônibus").
+  void definirSaidaExata(DateTime t) {
+    state = state.copyWith(saida: t);
+    _calcular();
   }
 }
 

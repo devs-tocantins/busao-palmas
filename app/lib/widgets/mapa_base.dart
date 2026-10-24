@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:vector_map_tiles/vector_map_tiles.dart' as vmt;
 
 import '../core/config.dart';
 import '../core/tema.dart';
+import '../state/mapa.dart';
 
-/// Mapa com os tiles do OpenStreetMap. [children] vão por cima (linhas e marcadores).
-class MapaBase extends StatelessWidget {
+/// Mapa de base minimalista (OpenFreeMap). [children] vão por cima (linhas e marcadores).
+class MapaBase extends ConsumerWidget {
   const MapaBase({
     super.key,
     required this.controller,
@@ -23,7 +26,9 @@ class MapaBase extends StatelessWidget {
   final double? zoom;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    final estilo = ref.watch(estiloMapaProvider(escuro)).value;
     return FlutterMap(
       mapController: controller,
       options: MapOptions(
@@ -31,16 +36,21 @@ class MapaBase extends StatelessWidget {
         initialZoom: zoom ?? Config.zoomInicial,
         minZoom: 9,
         maxZoom: 19,
+        backgroundColor: escuro
+            ? const Color(0xFF111111)
+            : const Color(0xFFF1F1EF),
         interactionOptions: const InteractionOptions(
           flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
         ),
         onTap: onTap == null ? null : (_, p) => onTap!(p),
       ),
       children: [
-        TileLayer(
-          urlTemplate: Config.tilesUrl,
-          userAgentPackageName: Config.userAgent,
-        ),
+        if (estilo != null)
+          vmt.VectorTileLayer(
+            theme: estilo.theme,
+            sprites: estilo.sprites,
+            tileProviders: estilo.providers,
+          ),
         ...children,
         const RichAttributionWidget(
           alignment: AttributionAlignment.bottomLeft,

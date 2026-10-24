@@ -24,8 +24,9 @@ flutter build web --release         # site em build/web/
 - **Nome legível das paradas e cor das linhas:** `assets/data/paradas.json` e `assets/data/linhas.json`,
   cópias de `data/gerado/` (gerado por `tools/snapshot.mjs`, formato em [docs/DADOS.md](../docs/DADOS.md)).
   Para atualizar: `cd tools && node snapshot.mjs`, depois copie os dois arquivos para `app/assets/data/`.
-- **Mapa:** tiles públicos do OpenStreetMap, só para desenvolvimento. Antes do lançamento público é preciso trocar
-  (política de uso: https://operations.osmfoundation.org/policies/tiles).
+- **Mapa:** estilos Positron (claro) e Dark do OpenFreeMap (gratuito, sem chave, dados do OpenStreetMap), desenhados no aparelho com `vector_map_tiles`.
+  Uso gratuito com atribuição, pensado para volume baixo. Antes do lançamento público, trocar por tiles próprios
+  (PMTiles do Tocantins ou OpenFreeMap) e conferir os termos: https://carto.com/basemaps.
 
 ## Link de rota (web)
 

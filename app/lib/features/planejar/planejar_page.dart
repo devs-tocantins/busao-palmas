@@ -50,7 +50,7 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
     _mapa.fitCamera(
       CameraFit.bounds(
         bounds: LatLngBounds.fromPoints(pts),
-        padding: EdgeInsets.fromLTRB(48, 200, 48, altura * 0.5),
+        padding: EdgeInsets.fromLTRB(48, 240, 48, altura * 0.5),
         maxZoom: 15.5,
       ),
     );
@@ -329,7 +329,11 @@ class _PainelOpcoes extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
     final temResultado =
         s.grupos is AsyncData && (s.grupos.value?.isNotEmpty ?? false);
-    final tamanho = s.destino == null ? 0.2 : (temResultado ? 0.44 : 0.3);
+    final tamanho = s.destino == null
+        ? 0.2
+        : temResultado
+        ? 0.44
+        : (s.grupos is AsyncError ? 0.62 : 0.3);
 
     return DraggableScrollableSheet(
       key: ValueKey(tamanho),
@@ -434,17 +438,61 @@ class _PainelOpcoes extends ConsumerWidget {
         const SizedBox(height: 8),
         Text(
           e is SemRota
-              ? 'Não achamos ônibus para esse trajeto'
+              ? (s.saida == null
+                    ? 'Sem ônibus para esse trajeto agora'
+                    : 'Sem ônibus para esse trajeto nesse horário')
               : 'Não conseguimos atualizar agora',
           style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 4),
         Text(
           e is SemRota
-              ? 'Tente outro destino ou outro horário.'
+              ? 'À noite e de madrugada há poucos ônibus. Veja outro horário:'
               : 'Verifique a internet e tente de novo.',
           style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
         ),
+        if (e is SemRota && s.saida == null) ...[
+          const SizedBox(height: 16),
+          if (s.procurandoProxima)
+            Row(
+              children: [
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    'Procurando o próximo ônibus…',
+                    style: t.bodyMedium,
+                  ),
+                ),
+              ],
+            )
+          else if (s.proxima != null)
+            _ProximaSaida(proxima: s.proxima!)
+          else
+            Text(
+              'Não achamos ônibus nas próximas 20 horas para esse trajeto.',
+              style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            ),
+        ],
+        if (e is SemRota) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final h in const [6, 8, 12, 17])
+                ActionChip(
+                  label: Text('Sair às ${h.toString().padLeft(2, '0')}:00'),
+                  onPressed: () =>
+                      ref.read(planejadorProvider.notifier).definirSaida(h),
+                ),
+            ],
+          ),
+        ],
       ],
       data: (grupos) => [
         for (var i = 0; i < grupos.length; i++)
@@ -572,6 +620,52 @@ class _CartaoRota extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// "Próximo ônibus às 05:10 · sai daqui a 5 h 37 min", com botão para ver essa rota.
+class _ProximaSaida extends ConsumerWidget {
+  const _ProximaSaida({required this.proxima});
+
+  final DateTime proxima;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    final falta = proxima.difference(DateTime.now());
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(Tokens.raioCartao),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Próximo ônibus às ${horaPalmas(proxima)}',
+            style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            falta.inMinutes < 1
+                ? 'Sai agora'
+                : 'Sai daqui a ${duracaoTexto(falta)}',
+            style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: () => ref
+                .read(planejadorProvider.notifier)
+                .definirSaidaExata(
+                  proxima.subtract(const Duration(minutes: 1)),
+                ),
+            child: Text('Ver rota das ${horaPalmas(proxima)}'),
+          ),
+        ],
       ),
     );
   }

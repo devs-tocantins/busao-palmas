@@ -1,0 +1,67 @@
+name: Site
+
+# Compila o app para a web e publica no GitHub Pages a cada merge na main que mexa em app/.
+# Em pull request só compila e testa (não publica), para o erro aparecer antes do merge.
+# Endereço: https://devs-tocantins.github.io/busao-palmas/
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/site.yml'
+  pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+
+      # Ação de terceiros: fixada pelo commit exato da tag v2.23.0.
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          channel: stable
+          flutter-version: 3.47.8
+          cache: true
+
+      # Falha se o pubspec.lock não bater com o pubspec.yaml, em vez de baixar versões diferentes das testadas.
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build web --release --base-href /busao-palmas/ --no-wasm-dry-run
+
+      # Links internos (por exemplo /rota) caem no app em vez de dar 404.
+      - run: cp build/web/index.html build/web/404.html
+
+      - uses: actions/upload-pages-artifact@v5
+        if: github.event_name != 'pull_request'
+        with:
+          path: app/build/web
+
+  publicar:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

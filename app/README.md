@@ -31,17 +31,17 @@ flutter build web --release         # site em build/web/
 
 ## Site publicado
 
-**https://devs-tocantins.github.io/busao-palmas/** (GitHub Pages, branch `gh-pages`, HTTPS).
+**https://devs-tocantins.github.io/busao-palmas/** (GitHub Pages, HTTPS).
 
-Publicado à mão em 2026-10-24 a partir da branch `m0-rota`. Para republicar:
+Publicado pela Action [`.github/workflows/site.yml`](../.github/workflows/site.yml):
 
-1. `cd app && flutter build web --release --base-href /busao-palmas/`
-2. Copie `build/web` para uma pasta **nova, vazia e fora do repositório**.
-3. Nessa pasta: copie `index.html` para `404.html` (links internos como `/rota` caem no app em vez de dar 404) e crie um arquivo vazio `.nojekyll`.
-4. Nessa pasta: `git init -b gh-pages`, `git add -A`, `git commit`, `git remote add origin <url do repositório>` e `git push -f origin gh-pages`.
+- **Pull request com mudança em `app/`:** roda `flutter analyze`, `flutter test` e `flutter build web`. Não publica.
+- **Merge na `main`** (ou "Run workflow" na aba Actions): faz o mesmo e publica. O site atualiza em poucos minutos.
 
-O site leva cerca de 1 minuto para atualizar. O ideal é trocar isso por uma GitHub Action que publica a cada merge na `main` (ainda não existe).
-Cuidado no passo 4: confira que está na pasta nova, e não dentro de `app/`.
+O Flutter da Action é fixado em 3.47.8; ao subir de versão, mude lá e em [docs/AMBIENTE.md](../docs/AMBIENTE.md).
+Configuração única do repositório: Settings → Pages → Source = **GitHub Actions**.
+
+Para gerar o site na sua máquina, sem publicar: `flutter build web --release --base-href /busao-palmas/` (saída em `build/web/`).
 
 ## Link de rota (web)
 

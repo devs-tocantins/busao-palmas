@@ -1,0 +1,295 @@
+[
+  {
+    "id": "1006sul-405norte-noite",
+    "nome": "Plano Diretor Sul (1006 Sul) → 405 Norte, à noite",
+    "origem": {
+      "nome": "Alameda 19, Quadra 1006 Sul",
+      "lat": -10.24849,
+      "lng": -48.319
+    },
+    "destino": {
+      "nome": "Quadra 405 Norte, Alameda 9",
+      "lat": -10.16058,
+      "lng": -48.34403
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "21:30"
+    },
+    "referencia": "Moovit em 2026-10-23 21:26 (dados dele estão desatualizados): linha 180 e depois 040, 50 min, chegada 22:16.",
+    "esperado": null
+  },
+  {
+    "id": "uft-rodoviaria",
+    "nome": "UFT → Rodoviária",
+    "origem": {
+      "nome": "UFT",
+      "lat": -10.1784,
+      "lng": -48.35956
+    },
+    "destino": {
+      "nome": "Rodoviária de Palmas",
+      "lat": -10.25684,
+      "lng": -48.31294
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "07:30"
+    },
+    "esperado": null
+  },
+  {
+    "id": "rodoviaria-uft",
+    "nome": "Rodoviária → UFT (volta)",
+    "origem": {
+      "nome": "Rodoviária de Palmas",
+      "lat": -10.25684,
+      "lng": -48.31294
+    },
+    "destino": {
+      "nome": "UFT",
+      "lat": -10.1784,
+      "lng": -48.35956
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "07:30"
+    },
+    "esperado": null
+  },
+  {
+    "id": "shopping-aeroporto",
+    "nome": "Palmas Shopping → Aeroporto",
+    "origem": {
+      "nome": "Palmas Shopping",
+      "lat": -10.18934,
+      "lng": -48.33552
+    },
+    "destino": {
+      "nome": "Aeroporto de Palmas",
+      "lat": -10.29155,
+      "lng": -48.35697
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "08:00"
+    },
+    "esperado": null,
+    "semRotaOk": true,
+    "nota": "O aeroporto só é servido pela linha 460 (Estação Xerente → Aeroporto, só ida, 9 saídas em dia útil). O planejador responde \"nenhuma parada no raio de busca\". A confirmar: é o serviço real ou limite do planejador?"
+  },
+  {
+    "id": "aeroporto-shopping",
+    "nome": "Aeroporto → Palmas Shopping (volta)",
+    "origem": {
+      "nome": "Aeroporto de Palmas",
+      "lat": -10.29155,
+      "lng": -48.35697
+    },
+    "destino": {
+      "nome": "Palmas Shopping",
+      "lat": -10.18934,
+      "lng": -48.33552
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "08:00"
+    },
+    "esperado": null,
+    "semRotaOk": true,
+    "nota": "O aeroporto só é servido pela linha 460 (Estação Xerente → Aeroporto, só ida, 9 saídas em dia útil). O planejador responde \"nenhuma parada no raio de busca\". A confirmar: é o serviço real ou limite do planejador?"
+  },
+  {
+    "id": "capim-dourado-hgp",
+    "nome": "Capim Dourado Shopping → Hospital Geral (HGP)",
+    "origem": {
+      "nome": "Capim Dourado Shopping",
+      "lat": -10.18271,
+      "lng": -48.34871
+    },
+    "destino": {
+      "nome": "HGP - Hospital Geral de Palmas",
+      "lat": -10.19619,
+      "lng": -48.33583
+    },
+    "quando": {
+      "dia": "ter",
+      "hora": "12:00"
+    },
+    "esperado": null
+  },
+  {
+    "id": "girassois-cesamar",
+    "nome": "Praça dos Girassóis → Parque Cesamar",
+    "origem": {
+      "nome": "Praça dos Girassóis",
+      "lat": -10.18459,
+      "lng": -48.33366
+    },
+    "destino": {
+      "nome": "Parque Cesamar",
+      "lat": -10.20963,
+      "lng": -48.32019
+    },
+    "quando": {
+      "dia": "qua",
+      "hora": "18:00"
+    },
+    "esperado": null
+  },
+  {
+    "id": "apinaje-taquarucu",
+    "nome": "Estação Apinajé → Taquaruçu (distrito)",
+    "origem": {
+      "nome": "Estação Apinajé",
+      "lat": -10.17904,
+      "lng": -48.33409
+    },
+    "destino": {
+      "nome": "Entrada de Taquaruçu",
+      "lat": -10.31085,
+      "lng": -48.16427
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "07:00"
+    },
+    "esperado": null
+  },
+  {
+    "id": "aureny-apinaje",
+    "nome": "Jardim Aureny III → Estação Apinajé",
+    "origem": {
+      "nome": "Jardim Aureny III",
+      "lat": -10.31519,
+      "lng": -48.31776
+    },
+    "destino": {
+      "nome": "Estação Apinajé",
+      "lat": -10.17904,
+      "lng": -48.33409
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "06:30"
+    },
+    "esperado": null
+  },
+  {
+    "id": "krahô-apinaje",
+    "nome": "Estação Krahô → Estação Apinajé (entre terminais)",
+    "origem": {
+      "nome": "Estação Krahô",
+      "lat": -10.25667,
+      "lng": -48.33269
+    },
+    "destino": {
+      "nome": "Estação Apinajé",
+      "lat": -10.17904,
+      "lng": -48.33409
+    },
+    "quando": {
+      "dia": "qui",
+      "hora": "17:30"
+    },
+    "esperado": null
+  },
+  {
+    "id": "sesc-detran-curta",
+    "nome": "SESC Palmas → DETRAN (distância curta, ~1 km)",
+    "origem": {
+      "nome": "SESC Palmas",
+      "lat": -10.16071,
+      "lng": -48.32115
+    },
+    "destino": {
+      "nome": "DETRAN",
+      "lat": -10.1631,
+      "lng": -48.32936
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "10:00"
+    },
+    "esperado": null
+  },
+  {
+    "id": "taquari-uft",
+    "nome": "Taquari (UBS) → UFT",
+    "origem": {
+      "nome": "UBS de Taquari",
+      "lat": -10.34635,
+      "lng": -48.33266
+    },
+    "destino": {
+      "nome": "UFT",
+      "lat": -10.1784,
+      "lng": -48.35956
+    },
+    "quando": {
+      "dia": "seg",
+      "hora": "07:00"
+    },
+    "esperado": null
+  },
+  {
+    "id": "unitins-ifto",
+    "nome": "UNITINS → IFTO",
+    "origem": {
+      "nome": "UNITINS",
+      "lat": -10.18256,
+      "lng": -48.36057
+    },
+    "destino": {
+      "nome": "IFTO",
+      "lat": -10.19962,
+      "lng": -48.31027
+    },
+    "quando": {
+      "dia": "sex",
+      "hora": "13:00"
+    },
+    "esperado": null
+  },
+  {
+    "id": "shopping-aeroporto-domingo",
+    "nome": "Palmas Shopping → Aeroporto, domingo",
+    "origem": {
+      "nome": "Palmas Shopping",
+      "lat": -10.18934,
+      "lng": -48.33552
+    },
+    "destino": {
+      "nome": "Aeroporto de Palmas",
+      "lat": -10.29155,
+      "lng": -48.35697
+    },
+    "quando": {
+      "dia": "dom",
+      "hora": "10:00"
+    },
+    "esperado": null,
+    "semRotaOk": true,
+    "nota": "O aeroporto só é servido pela linha 460 (Estação Xerente → Aeroporto, só ida, 9 saídas em dia útil). O planejador responde \"nenhuma parada no raio de busca\". A confirmar: é o serviço real ou limite do planejador?"
+  },
+  {
+    "id": "aeroporto-madrugada",
+    "nome": "Aeroporto → Estação Apinajé, madrugada (talvez sem ônibus)",
+    "origem": {
+      "nome": "Aeroporto de Palmas",
+      "lat": -10.29155,
+      "lng": -48.35697
+    },
+    "destino": {
+      "nome": "Estação Apinajé",
+      "lat": -10.17904,
+      "lng": -48.33409
+    },
+    "quando": {
+      "dia": "ter",
+      "hora": "03:00"
+    },
+    "semRotaOk": true,
+    "esperado": null
+  }
+]

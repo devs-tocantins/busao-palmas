@@ -41,7 +41,7 @@ Exemplo: centro de Palmas, zoom 16 → `5992,8657,16` (59 paradas).
 
 ## Particularidades
 
-- 83% das paradas (886 de 1064) têm só o código no `name` (ex.: `450134721`) e `address` vazio. Ver [paradas.mjs](../tools/paradas.mjs).
+- 83% das paradas (886 de 1064 vistas no primeiro levantamento) têm só o código no `name` (ex.: `450134721`) e `address` vazio. Ver [nomes-paradas.mjs](../tools/nomes-paradas.mjs).
 - Nomes que não são código vêm com sujeira: `"Avenida Tocantins Palmas - Tocantins 77060-150 Brasil"`.
 - `stops` sem `tile` devolve erro 500 (`Cannot read properties of undefined (reading 'x')`).
 - `/vehicles-by-trip` devolve texto cifrado; não usado.

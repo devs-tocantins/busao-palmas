@@ -58,7 +58,8 @@ export function buscar(indice, consulta, limite = 8, apelidos = {}) {
 
 if (process.argv[1] && import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
   const idx = await montarIndice();
-  mkdirSync('../data/gerado', { recursive: true });
-  writeFileSync('../data/gerado/busca.json', JSON.stringify(idx));
+  const saida = new URL('../data/gerado/', import.meta.url);
+  mkdirSync(saida, { recursive: true });
+  writeFileSync(new URL('busca.json', saida), JSON.stringify(idx));
   console.log(`${idx.length} itens`, JSON.stringify(idx.reduce((c, i) => ((c[i.k] = (c[i.k] || 0) + 1), c), {})));
 }

@@ -6,18 +6,14 @@ import 'core/tema.dart';
 import 'features/planejar/busca_page.dart';
 import 'features/planejar/planejar_page.dart';
 import 'features/rota/detalhe_rota_page.dart';
-import 'state/planejador.dart';
 
 final _router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (_, _) => const PlanejarPage()),
     GoRoute(
       path: '/busca/:campo',
-      builder: (_, s) => BuscaPage(
-        campo: s.pathParameters['campo'] == 'origem'
-            ? CampoMapa.origem
-            : CampoMapa.destino,
-      ),
+      builder: (_, s) =>
+          BuscaPage(modo: ModoBusca.doTexto(s.pathParameters['campo'])),
     ),
     GoRoute(path: '/rota', builder: (_, _) => const DetalheRotaPage()),
   ],

@@ -28,6 +28,10 @@ final estiloMapaProvider = FutureProvider.family<vmt.Style?, bool>((
         options: Options(responseType: ResponseType.json),
       );
       final json = r.data!;
+      // O pacote do mapa guarda tiles já desenhados num cache que sobrevive a fechar o app, com chave baseada
+      // neste id. Os estilos do OpenFreeMap não trazem id (viram "default"), então claro e escuro se misturavam.
+      // Suba o número da versão sempre que mudar o estilo ou a lista de camadas removidas.
+      json['id'] = escuro ? 'busao-escuro-v2' : 'busao-claro-v2';
       (json['layers'] as List).removeWhere(
         (l) => _camadasRemovidas.contains((l as Map)['id']),
       );

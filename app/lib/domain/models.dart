@@ -17,6 +17,22 @@ class Lugar {
   final LatLng pos;
   final bool ehParada;
   final bool minhaLocalizacao;
+
+  /// Para guardar no aparelho. "Minha localização" nunca é guardada (muda a cada uso).
+  Map<String, dynamic> toJson() => {
+    'nome': nome,
+    if (detalhe != null) 'detalhe': detalhe,
+    'lat': pos.latitude,
+    'lng': pos.longitude,
+    if (ehParada) 'parada': true,
+  };
+
+  factory Lugar.fromJson(Map<String, dynamic> j) => Lugar(
+    nome: j['nome'] as String,
+    detalhe: j['detalhe'] as String?,
+    pos: LatLng((j['lat'] as num).toDouble(), (j['lng'] as num).toDouble()),
+    ehParada: j['parada'] == true,
+  );
 }
 
 /// Um trecho da rota: a pé ou de ônibus.

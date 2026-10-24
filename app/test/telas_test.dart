@@ -116,8 +116,8 @@ void main() {
 
       expect(tester(t, 'Alameda 19, Quadra 1006 Sul'), isTrue);
       expect(find.textContaining('Caminhe'), findsWidgets);
-      expect(find.text('Embarque'), findsWidgets);
-      expect(find.text('Desça aqui'), findsWidgets);
+      expect(find.textContaining('Embarque'), findsWidgets);
+      expect(find.textContaining('Desça aqui'), findsWidgets);
       expect(find.textContaining('chega às'), findsOneWidget);
       expect(t.takeException(), isNull);
     },

@@ -8,6 +8,10 @@ abstract final class Config {
   /// OTP (planejador e geocodificador) de Palmas; ambos aceitam chamada do navegador.
   static const otpUri = 'https://otp.mobilibus.com/vJJqIBsca8nqEF';
 
+  /// API de dados da Mobilibus (horários ao vivo). Não libera o navegador (sem CORS): só serve fora da web.
+  static const apiUri = 'https://mobilibus.com/api';
+  static const projetoId = 635;
+
   static const centro = LatLng(-10.184, -48.333);
   static const zoomInicial = 13.0;
 

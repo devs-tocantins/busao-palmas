@@ -71,6 +71,12 @@ Escolher um destino no Início leva ao Mapa. "Perto de você" usa as paradas do 
 
 Com zoom 15 ou mais o mapa mostra as paradas (até 400 na área visível); tocar abre a tela da parada. O chip de horário oferece "Sair agora", "Sair às" e "Chegar às" (o planejador recebe `arriveBy`).
 
+## Ônibus ao vivo
+
+O mapa mostra todos os ônibus rodando como miniaturas que giram e deslizam a cada 20 s (`CamadaOnibus`); tocar abre a linha, o atraso e o último sinal. Na tela da linha só os dela; na rota, os das linhas da viagem, e o ônibus que a pessoa vai pegar fica com um círculo amarelo. O cartão "Chega em N min" no detalhe da rota usa a passagem mais perto do horário previsto e, havendo GPS, mostra a distância do ônibus até a parada.
+
+A API não libera o navegador, então **na web não há ônibus ao vivo** (o chip avisa). A consulta só roda enquanto a tela está à vista. Detalhes em [docs/API_MOBILIBUS.md](../docs/API_MOBILIBUS.md).
+
 ## Busca de lugar
 
 Responde a cada letra com o que está no aparelho (`lib/data/busca_local.dart`: lugares de `busca.json`, paradas, linhas e apelidos como "uft"), sem acento e sem internet. A partir de 3 letras o geocodificador do Bus2 completa o que faltar. O texto vai ao geocodificador sem acento: ele erra com acento (verificado em 2026-10-25: `rodoviária` devolve rodovias).

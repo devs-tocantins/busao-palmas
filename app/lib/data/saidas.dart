@@ -100,6 +100,7 @@ List<SaidasLinha> interpretarDepartures(Map json, {DateTime? agora}) {
           ), // de relógio de Palmas para instante UTC
           aoVivo: d['vehicleId'] != null,
           atrasoSeg: (d['delay'] as num?)?.toInt(),
+          veiculo: d['vehicleId']?.toString(),
         ),
       ));
     }

@@ -7,6 +7,8 @@ import 'package:busao_palmas/data/otp_client.dart';
 import 'package:busao_palmas/domain/models.dart';
 import 'package:busao_palmas/features/planejar/planejar_page.dart';
 import 'package:busao_palmas/features/rota/detalhe_rota_page.dart';
+import 'package:busao_palmas/data/frota_repo.dart';
+import 'package:busao_palmas/state/frota.dart';
 import 'package:busao_palmas/state/mapa.dart';
 import 'package:busao_palmas/state/planejador.dart';
 import 'package:flutter/material.dart';
@@ -89,6 +91,7 @@ Widget appParaTeste(
     overrides: [
       dadosLocaisProvider.overrideWithValue(dados),
       estiloMapaProvider.overrideWith((ref, escuro) async => null),
+      frotaProvider.overrideWith((ref) => Stream.value(const <Onibus>[])),
       planejadorProvider.overrideWith(() => _PlanejadorFalso(estado)),
     ],
     child: MaterialApp(
@@ -106,7 +109,8 @@ void main() {
   testWidgets(
     'detalhe da rota mostra a linha do tempo completa (celular, claro)',
     (t) async {
-      t.view.physicalSize = const Size(1080, 2400);
+      // Tela alta: o cartão "seu ônibus" empurra a linha do tempo para baixo do painel.
+      t.view.physicalSize = const Size(1080, 3600);
       t.view.devicePixelRatio = 2.75;
       addTearDown(t.view.reset);
       final (estado, dados) = await estadoParaTeste();
@@ -114,6 +118,7 @@ void main() {
       await t.pumpWidget(appParaTeste(estado, dados, const DetalheRotaPage()));
       await t.pump(const Duration(milliseconds: 600));
 
+      expect(find.textContaining('Horário do seu ônibus'), findsOneWidget);
       expect(tester(t, 'Alameda 19, Quadra 1006 Sul'), isTrue);
       expect(find.textContaining('Caminhe'), findsWidgets);
       expect(find.textContaining('Embarque'), findsWidgets);

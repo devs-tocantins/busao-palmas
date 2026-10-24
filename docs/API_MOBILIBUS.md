@@ -18,9 +18,11 @@ Nenhuma envia CORS; o OTP envia.
 | `/stops` | `project_id`, `tile=x,y,zoom` | paradas do quadrante (zoom ≥ 14) | — |
 | `/departures` | `project_id`, `stop_id` | próximos ônibus da parada; com `vehicleId`, `gpsTime`, `delay` quando há ônibus ao vivo | 30 s |
 | `/timetable-by-stop` | `project_id`, `stop_id` | grade de horários da parada | — |
-| `/vehicles` | `trip_id` | ônibus ao vivo da viagem (`lat`, `lng`, `percTravelled`, `delay`) | — |
+| `/vehicles` | `trip_id` | ônibus ao vivo da viagem: `vehicleId`, `lat`, `lng`, `heading` (graus do norte), `positionTime` (HH:mm:ss de Palmas), `percTravelled`, `delay` (s; negativo = adiantado), `startTime`, `seq`. Resposta fica 15 s no cache da CDN | 15 s |
 | `/alerts` | `project_id` | avisos (vazio em 2026-10-23) | — |
 | OTP `{otpUri}/otp/routers/default/plan` | `fromPlace`, `toPlace`, `date=MM-DD-YYYY`, `time=HH:mm`, `mode=TRANSIT,WALK`, `numItineraries` | itinerários com trechos a pé e de ônibus, traçado e passos | — |
+
+**Todos os ônibus de uma vez:** não existe endpoint para isso. Pergunta-se pelas 106 viagens do snapshot (`trajetos.json`), em lotes de 30. Medido em 2026-10-24 (sábado, 16:53): 106 respostas em 1,6 s, 34 ônibus; o mesmo ônibus nunca apareceu em duas viagens. Sem CORS: só no app.
 
 `otpUri` de Palmas: `https://otp.mobilibus.com/vJJqIBsca8nqEF`.
 

@@ -2,8 +2,8 @@
 
 ## Corrigir o nome de uma parada
 
-Os nomes vêm do OpenStreetMap e às vezes ficam estranhos ou vazios (cerca de 15% das paradas só têm o código).
-Para corrigir, adicione o código da parada e o nome em `data/paradas_nomes.json`:
+Os nomes vêm do OpenStreetMap e às vezes ficam estranhos ou vazios (cerca de 16% das paradas só têm o código).
+Para corrigir (depois rode `node tools/snapshot.mjs` e confira `origem: "correcao"` em `data/gerado/paradas.json`), adicione o código da parada e o nome em `data/paradas_nomes.json`:
 
 ```json
 {
@@ -24,6 +24,10 @@ Em `data/apelidos.json`, sigla ou nome popular → nome como está no OpenStreet
 ```
 
 Para testar, rode `node tools/indice-busca.mjs` e confira no resultado se o nome existe.
+
+## Adicionar um caso de teste de rota
+
+Um trajeto que você conhece, com a linha ou o tempo que funcionam. Passo a passo em [docs/CASOS_ROTA.md](docs/CASOS_ROTA.md).
 
 ## Código
 

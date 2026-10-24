@@ -10,7 +10,7 @@ Mapas e nomes de ruas e lugares: © colaboradores do OpenStreetMap (ODbL).
 
 | Pasta | Conteúdo |
 |---|---|
-| `docs/` | [Arquitetura](docs/ARQUITETURA.md), [rota de A para B](docs/UX_ROTA.md), [API de dados](docs/API_MOBILIBUS.md) |
+| `docs/` | [Arquitetura](docs/ARQUITETURA.md), [rota de A para B](docs/UX_ROTA.md), [formato dos dados](docs/DADOS.md), [API de origem](docs/API_MOBILIBUS.md), [casos de teste da rota](docs/CASOS_ROTA.md), [design](docs/DESIGN.md), [montar o ambiente](docs/AMBIENTE.md) |
 | `tools/` | Scripts Node que geram os dados do app (paradas com nome legível, índice de busca) |
 | `data/` | Arquivos que a comunidade edita: `apelidos.json`, `paradas_nomes.json`. `data/gerado/` é saída das ferramentas |
 | `app/` | App Flutter (a criar) |
@@ -22,8 +22,9 @@ Precisa de Node 20 ou mais novo.
 
 ```bash
 cd tools
-node paradas.mjs   # data/gerado/paradas.json
-node indice-busca.mjs   # data/gerado/busca.json
+node snapshot.mjs     # baixa e gera data/gerado/ (cerca de 2 min)
+node validar.mjs      # confere o formato
+node casos-rota.mjs   # testa a rota em 15 trajetos de Palmas
 ```
 
 Na primeira execução baixa ruas e lugares do OpenStreetMap e guarda em `tools/.cache/`.

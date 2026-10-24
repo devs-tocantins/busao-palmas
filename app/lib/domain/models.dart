@@ -154,3 +154,56 @@ List<GrupoOpcoes> agruparOpcoes(List<Opcao> opcoes) {
   }).toList()..sort((a, b) => a.principal.fim.compareTo(b.principal.fim));
   return grupos;
 }
+
+/// Uma parada que se quer consultar: o nome para mostrar e o ponto no mapa.
+class ParadaRef {
+  const ParadaRef({required this.nome, required this.pos});
+
+  final String nome;
+  final LatLng pos;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ParadaRef &&
+      other.nome == nome &&
+      other.pos.latitude.toStringAsFixed(5) ==
+          pos.latitude.toStringAsFixed(5) &&
+      other.pos.longitude.toStringAsFixed(5) ==
+          pos.longitude.toStringAsFixed(5);
+
+  @override
+  int get hashCode => Object.hash(
+    nome,
+    pos.latitude.toStringAsFixed(5),
+    pos.longitude.toStringAsFixed(5),
+  );
+}
+
+/// Uma passagem de ônibus numa parada.
+class Chegada {
+  const Chegada({required this.horario, this.aoVivo = false, this.atrasoSeg});
+
+  final DateTime horario;
+
+  /// true quando há um ônibus real a caminho (posição de GPS); false é horário programado.
+  final bool aoVivo;
+  final int? atrasoSeg;
+
+  Duration quantoFalta([DateTime? agora]) =>
+      horario.difference(agora ?? DateTime.now());
+}
+
+/// As próximas passagens de uma linha, num sentido, numa parada.
+class SaidasLinha {
+  const SaidasLinha({
+    required this.linha,
+    required this.destino,
+    required this.chegadas,
+  });
+
+  final String linha;
+  final String? destino;
+  final List<Chegada> chegadas;
+
+  Chegada get proxima => chegadas.first;
+}

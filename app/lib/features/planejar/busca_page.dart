@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/rotas.dart';
 import '../../core/tema.dart';
 import '../../domain/models.dart';
 import '../../state/planejador.dart';
@@ -257,13 +258,22 @@ class _BuscaPageState extends ConsumerState<BuscaPage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                     trailing: _modo.ehViagem
-                        ? PopupMenuButton<Atalho>(
-                            tooltip: 'Salvar como casa ou trabalho',
+                        ? PopupMenuButton<Object>(
+                            tooltip: l.ehParada
+                                ? 'Mais opções da parada'
+                                : 'Salvar como casa ou trabalho',
                             icon: const Icon(Icons.more_vert_rounded, size: 20),
-                            onSelected: (a) => _salvarComo(a, l),
+                            onSelected: (a) => a is Atalho
+                                ? _salvarComo(a, l)
+                                : context.push(caminhoParada(l.nome, l.pos)),
                             itemBuilder: (_) => [
+                              if (l.ehParada)
+                                const PopupMenuItem<Object>(
+                                  value: 'horarios',
+                                  child: Text('Ver horários da parada'),
+                                ),
                               for (final a in Atalho.values)
-                                PopupMenuItem(
+                                PopupMenuItem<Object>(
                                   value: a,
                                   child: Text(
                                     'Definir como ${a.rotulo.toLowerCase()}',

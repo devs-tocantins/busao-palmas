@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/formato.dart';
+import '../../core/rotas.dart';
 import '../../core/tema.dart';
 import '../../domain/models.dart';
 import '../../state/planejador.dart';
@@ -340,7 +341,8 @@ class _LinhaDoTempo extends StatelessWidget {
           marcador: _Ponto(cor: cor),
           hora: horaPalmas(t.inicio),
           titulo: t.nomeDe,
-          sub: 'Embarque',
+          sub: 'Embarque · ver horários da parada',
+          aoTocar: () => context.push(caminhoParada(t.nomeDe, t.de)),
         ),
       );
       blocos.add(
@@ -360,7 +362,8 @@ class _LinhaDoTempo extends StatelessWidget {
           marcador: _Ponto(cor: cor),
           hora: horaPalmas(t.fim),
           titulo: t.nomePara,
-          sub: 'Desça aqui',
+          sub: 'Desça aqui · ver horários da parada',
+          aoTocar: () => context.push(caminhoParada(t.nomePara, t.para)),
           fim: true,
         ),
       );
@@ -506,8 +509,10 @@ class _Bloco extends StatelessWidget {
     this.tracejado = false,
     this.fim = false,
     this.ultimo = false,
+    this.aoTocar,
   });
 
+  final VoidCallback? aoTocar;
   final Color cor;
   final Widget marcador;
   final String? hora;
@@ -577,29 +582,35 @@ class _Bloco extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: ultimo ? 0 : 18),
-              child:
-                  conteudo ??
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        titulo ?? '',
-                        style: t.bodyLarge?.copyWith(
-                          fontWeight: fraco ? FontWeight.w400 : FontWeight.w600,
-                          color: fraco ? cs.onSurfaceVariant : cs.onSurface,
-                        ),
-                      ),
-                      if (sub != null)
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: aoTocar,
+              child: Padding(
+                padding: EdgeInsets.only(bottom: ultimo ? 0 : 18),
+                child:
+                    conteudo ??
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          sub!,
-                          style: t.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
+                          titulo ?? '',
+                          style: t.bodyLarge?.copyWith(
+                            fontWeight: fraco
+                                ? FontWeight.w400
+                                : FontWeight.w600,
+                            color: fraco ? cs.onSurfaceVariant : cs.onSurface,
                           ),
                         ),
-                    ],
-                  ),
+                        if (sub != null)
+                          Text(
+                            sub!,
+                            style: t.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+              ),
             ),
           ),
         ],

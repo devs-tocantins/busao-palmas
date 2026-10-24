@@ -3,6 +3,11 @@ import 'package:go_router/go_router.dart';
 
 import 'core/config.dart';
 import 'core/tema.dart';
+
+import 'package:latlong2/latlong.dart';
+
+import 'domain/models.dart';
+import 'features/parada/parada_page.dart';
 import 'features/planejar/busca_page.dart';
 import 'features/planejar/planejar_page.dart';
 import 'features/rota/detalhe_rota_page.dart';
@@ -16,6 +21,18 @@ final _router = GoRouter(
           BuscaPage(modo: ModoBusca.doTexto(s.pathParameters['campo'])),
     ),
     GoRoute(path: '/rota', builder: (_, _) => const DetalheRotaPage()),
+    GoRoute(
+      path: '/parada',
+      builder: (_, s) {
+        final q = s.uri.queryParameters;
+        final la = double.tryParse(q['lat'] ?? ''),
+            lo = double.tryParse(q['lng'] ?? '');
+        if (la == null || lo == null) return const PlanejarPage();
+        return ParadaPage(
+          parada: ParadaRef(nome: q['nome'] ?? 'Parada', pos: LatLng(la, lo)),
+        );
+      },
+    ),
   ],
 );
 

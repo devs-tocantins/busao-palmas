@@ -43,6 +43,15 @@ Configuração única do repositório: Settings → Pages → Source = **GitHub 
 
 Para gerar o site na sua máquina, sem publicar: `flutter build web --release --base-href /busao-palmas/` (saída em `build/web/`).
 
+## Link de parada (web)
+
+`/parada?lat=-10.17792034&lng=-48.3340683&nome=Estação+Apinajé`
+
+`lat` e `lng` são o ponto da parada; `nome` é o título da tela. Mostra as próximas passagens de cada linha.
+Na web só aparece horário programado: a API que traz o ônibus ao vivo (`departures`) não libera o navegador. No Android
+as duas fontes são usadas, e a linha com ônibus real mostra "Ao vivo". Para ter o ao vivo na web é preciso o proxy
+descrito em [docs/ARQUITETURA.md](../docs/ARQUITETURA.md).
+
 ## Link de rota (web)
 
 `/?de=-10.2491,-48.3243&para=-10.1450,-48.3420&hora=08:00`

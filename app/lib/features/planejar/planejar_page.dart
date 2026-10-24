@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/config.dart';
 import '../../core/formato.dart';
+import '../../core/layout.dart';
 import '../../core/tema.dart';
 import '../../data/otp_client.dart' show SemRota;
 import '../../domain/models.dart';
@@ -38,6 +39,16 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
     });
   }
 
+  /// Leva o mapa até a posição do aparelho (pede a localização se ainda não temos).
+  Future<void> _irParaMim() async {
+    final n = ref.read(planejadorProvider.notifier);
+    if (ref.read(planejadorProvider).minhaPos == null) {
+      await n.usarMinhaLocalizacao();
+    }
+    final aqui = ref.read(planejadorProvider).minhaPos;
+    if (aqui != null && mounted) _mapa.move(aqui, 16);
+  }
+
   void _enquadrar(PlanejadorState s) {
     final pts = [
       if (s.origem != null) s.origem!.pos,
@@ -45,6 +56,7 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
     ];
     if (pts.isEmpty) return;
     final altura = MediaQuery.sizeOf(context).height;
+    final grande = telaGrande(context);
     if (pts.length == 1) {
       _mapa.move(pts.first, 15);
       return;
@@ -52,7 +64,9 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
     _mapa.fitCamera(
       CameraFit.bounds(
         bounds: LatLngBounds.fromPoints(pts),
-        padding: EdgeInsets.fromLTRB(48, 240, 48, altura * 0.5),
+        padding: grande
+            ? const EdgeInsets.all(96)
+            : EdgeInsets.fromLTRB(48, 240, 48, altura * 0.5),
         maxZoom: 15.5,
       ),
     );
@@ -67,6 +81,61 @@ class _PlanejarPageState extends ConsumerState<PlanejarPage> {
         _enquadrarQuandoVisivel();
       },
     );
+
+    final grande = telaGrande(context);
+    if (grande) {
+      // Computador: painel fixo à esquerda e o mapa inteiro ao lado, com botões de zoom.
+      return Scaffold(
+        body: Row(
+          children: [
+            const SizedBox(width: 420, child: _PainelLateral()),
+            const VerticalDivider(width: 1),
+            Expanded(
+              child: Stack(
+                children: [
+                  MapaBase(
+                    controller: _mapa,
+                    botoes: true,
+                    aoLocalizar: _irParaMim,
+                    onTap: (p) =>
+                        ref.read(planejadorProvider.notifier).tocarNoMapa(p),
+                    children: [
+                      MarkerLayer(
+                        markers: [
+                          if (s.origem != null)
+                            marcadorPonto(
+                              s.origem!.pos,
+                              destino: false,
+                              context: context,
+                            ),
+                          if (s.destino != null)
+                            marcadorPonto(
+                              s.destino!.pos,
+                              destino: true,
+                              context: context,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  if (s.campoMapa == CampoMapa.origem)
+                    const Positioned(
+                      top: 16,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: _Dica(
+                          texto: 'Clique no mapa para escolher a origem',
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       body: Stack(
@@ -316,6 +385,42 @@ class _Campo extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Painel de tela grande: campos de origem e destino no topo e as opções abaixo, rolando.
+class _PainelLateral extends ConsumerWidget {
+  const _PainelLateral();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(planejadorProvider);
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 24),
+          children: [
+            const _Cabecalho(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Tokens.margem,
+                16,
+                Tokens.margem,
+                0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ...const _PainelOpcoes()._conteudo(context, ref, s),
+                  if (s.destino != null) _SalvarDestino(destino: s.destino!),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

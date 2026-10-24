@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'core/config.dart';
+import 'core/layout.dart';
 import 'core/tema.dart';
 import 'domain/models.dart';
 import 'features/inicio/inicio_page.dart';
@@ -21,7 +22,12 @@ final _router = GoRouter(
       builder: (_, _, shell) => _Abas(shell: shell),
       branches: [
         StatefulShellBranch(
-          routes: [GoRoute(path: '/', builder: (_, _) => const InicioPage())],
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (_, _) => const ColunaCentral(child: InicioPage()),
+            ),
+          ],
         ),
         StatefulShellBranch(
           routes: [
@@ -30,33 +36,51 @@ final _router = GoRouter(
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: '/linhas', builder: (_, _) => const LinhasPage()),
+            GoRoute(
+              path: '/linhas',
+              builder: (_, _) => const ColunaCentral(child: LinhasPage()),
+            ),
           ],
         ),
         StatefulShellBranch(
-          routes: [GoRoute(path: '/mais', builder: (_, _) => const MaisPage())],
+          routes: [
+            GoRoute(
+              path: '/mais',
+              builder: (_, _) => const ColunaCentral(child: MaisPage()),
+            ),
+          ],
         ),
       ],
     ),
     GoRoute(
       path: '/busca/:campo',
-      builder: (_, s) =>
-          BuscaPage(modo: ModoBusca.doTexto(s.pathParameters['campo'])),
+      builder: (_, s) => ColunaCentral(
+        child: BuscaPage(modo: ModoBusca.doTexto(s.pathParameters['campo'])),
+      ),
     ),
     GoRoute(
       path: '/linha/:numero',
-      builder: (_, s) => LinhaPage(numero: s.pathParameters['numero'] ?? ''),
+      builder: (_, s) => ColunaCentral(
+        child: LinhaPage(numero: s.pathParameters['numero'] ?? ''),
+      ),
     ),
-    GoRoute(path: '/rota', builder: (_, _) => const DetalheRotaPage()),
+    GoRoute(
+      path: '/rota',
+      builder: (_, _) => const ColunaCentral(child: DetalheRotaPage()),
+    ),
     GoRoute(
       path: '/parada',
       builder: (_, s) {
         final q = s.uri.queryParameters;
         final la = double.tryParse(q['lat'] ?? ''),
             lo = double.tryParse(q['lng'] ?? '');
-        if (la == null || lo == null) return const InicioPage();
-        return ParadaPage(
-          parada: ParadaRef(nome: q['nome'] ?? 'Parada', pos: LatLng(la, lo)),
+        if (la == null || lo == null) {
+          return const ColunaCentral(child: InicioPage());
+        }
+        return ColunaCentral(
+          child: ParadaPage(
+            parada: ParadaRef(nome: q['nome'] ?? 'Parada', pos: LatLng(la, lo)),
+          ),
         );
       },
     ),
@@ -75,36 +99,74 @@ class _Abas extends StatelessWidget {
       onPopInvokedWithResult: (voltou, _) {
         if (!voltou) shell.goBranch(0);
       },
-      child: Scaffold(
-        body: shell,
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: shell.currentIndex,
-          // Tocar na aba em que já está volta ao começo dela.
-          onDestinationSelected: (i) =>
-              shell.goBranch(i, initialLocation: i == shell.currentIndex),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
-              label: 'Início',
+      child: telaGrande(context)
+          ? Scaffold(
+              body: Row(
+                children: [
+                  NavigationRail(
+                    selectedIndex: shell.currentIndex,
+                    labelType: NavigationRailLabelType.all,
+                    onDestinationSelected: (i) => shell.goBranch(
+                      i,
+                      initialLocation: i == shell.currentIndex,
+                    ),
+                    destinations: const [
+                      NavigationRailDestination(
+                        icon: Icon(Icons.home_outlined),
+                        selectedIcon: Icon(Icons.home_rounded),
+                        label: Text('Início'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.map_outlined),
+                        selectedIcon: Icon(Icons.map_rounded),
+                        label: Text('Mapa'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.route_outlined),
+                        selectedIcon: Icon(Icons.route_rounded),
+                        label: Text('Linhas'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.more_horiz_rounded),
+                        label: Text('Mais'),
+                      ),
+                    ],
+                  ),
+                  const VerticalDivider(width: 1),
+                  Expanded(child: shell),
+                ],
+              ),
+            )
+          : Scaffold(
+              body: shell,
+              bottomNavigationBar: NavigationBar(
+                selectedIndex: shell.currentIndex,
+                // Tocar na aba em que já está volta ao começo dela.
+                onDestinationSelected: (i) =>
+                    shell.goBranch(i, initialLocation: i == shell.currentIndex),
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home_rounded),
+                    label: 'Início',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.map_outlined),
+                    selectedIcon: Icon(Icons.map_rounded),
+                    label: 'Mapa',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.route_outlined),
+                    selectedIcon: Icon(Icons.route_rounded),
+                    label: 'Linhas',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.more_horiz_rounded),
+                    label: 'Mais',
+                  ),
+                ],
+              ),
             ),
-            NavigationDestination(
-              icon: Icon(Icons.map_outlined),
-              selectedIcon: Icon(Icons.map_rounded),
-              label: 'Mapa',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.route_outlined),
-              selectedIcon: Icon(Icons.route_rounded),
-              label: 'Linhas',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.more_horiz_rounded),
-              label: 'Mais',
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/busca_local.dart';
 import '../data/linhas_repo.dart';
 import '../data/paradas_repo.dart';
 import '../domain/models.dart';
@@ -22,4 +23,9 @@ final saidasProvider = FutureProvider.autoDispose
 /// Horários, traçados e paradas das linhas, lidos uma vez dos assets.
 final dadosLinhasProvider = FutureProvider<DadosLinhas>(
   (ref) => DadosLinhas.carregar(ref.watch(dadosLocaisProvider)),
+);
+
+/// Índice de busca no aparelho (lugares, paradas e linhas), lido uma vez dos assets.
+final buscaLocalProvider = FutureProvider<BuscaLocal>(
+  (ref) => BuscaLocal.carregar(ref.watch(dadosLocaisProvider)),
 );

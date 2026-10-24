@@ -21,9 +21,9 @@ flutter build web --release         # site em build/web/
 
 - **Rota, busca de lugar e nome do ponto no mapa:** planejador (OTP) e geocodificador do Bus2, os mesmos do app SOU
   ([docs/API_MOBILIBUS.md](../docs/API_MOBILIBUS.md)). Aceitam chamada do navegador, então a web não precisa de proxy nesta fase.
-- **Paradas, linhas, horários e percursos:** `assets/data/` (`paradas`, `linhas`, `horarios`, `trajetos`),
+- **Paradas, linhas, horários, percursos e busca:** `assets/data/` (`paradas`, `linhas`, `horarios`, `trajetos`, `busca`),
   cópias de `data/gerado/` (gerado por `tools/snapshot.mjs`, formato em [docs/DADOS.md](../docs/DADOS.md)).
-  Para atualizar: `cd tools && node snapshot.mjs`, depois copie os quatro arquivos para `app/assets/data/`.
+  Para atualizar: `cd tools && node snapshot.mjs`, depois copie esses cinco arquivos (e `data/apelidos.json`) para `app/assets/data/`.
 - **Mapa:** estilos Positron (claro) e Dark do OpenFreeMap (gratuito, sem chave, dados do OpenStreetMap), desenhados no aparelho
   com `vector_map_tiles`. Retiramos do estilo os nomes de ruas pequenas (`lib/state/mapa.dart`). Atribuição sempre visível.
   O OpenFreeMap vive de doações: se o app crescer, apoiar ou trocar por tiles próprios (PMTiles do Tocantins).
@@ -66,6 +66,14 @@ A tela da linha (`/linha/620`) mostra o percurso, os horários por tipo de dia e
 A estrela na tela da linha e da parada guarda o favorito no aparelho (chave `salvos_v1`); eles aparecem no Início, em "Favoritos".
 Tudo vem do snapshot embutido (sem rede); só o ônibus ao vivo vem da parada.
 Escolher um destino no Início leva ao Mapa. "Perto de você" usa as paradas do snapshot, sem rede, e só pede horários das 3 mais próximas.
+
+## Busca de lugar
+
+Responde a cada letra com o que está no aparelho (`lib/data/busca_local.dart`: lugares de `busca.json`, paradas, linhas e apelidos como "uft"), sem acento e sem internet. A partir de 3 letras o geocodificador do Bus2 completa o que faltar. O texto vai ao geocodificador sem acento: ele erra com acento (verificado em 2026-10-25: `rodoviária` devolve rodovias).
+
+## Computador
+
+A partir de 900 px de largura: menu na lateral, painel de rota ao lado do mapa, botões de zoom e de localização, e as demais telas numa coluna de 640 px. Abaixo disso, o layout de celular.
 
 ## Estrutura
 
